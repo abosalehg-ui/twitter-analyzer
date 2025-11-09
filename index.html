@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة تحليل تغريدات تويتر</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #1d1d1f;
+            color: #e8e8e8;
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 600;
+            color: #f5f5f5;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: #a8a8a8;
+            font-weight: 400;
+        }
+
+        .input-section {
+            background: #2a2a2c;
+            border-radius: 16px;
+            padding: clamp(20px, 4vw, 32px);
+            margin-bottom: 24px;
+            border: 1px solid #3a3a3c;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #f5f5f5;
+            font-size: clamp(0.95rem, 2vw, 1.05rem);
+        }
+
+        .input-group textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px;
+            background: #1d1d1f;
+            border: 1px solid #3a3a3c;
+            border-radius: 12px;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.2s;
+            color: #e8e8e8;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #cd7f32;
+            box-shadow: 0 0 0 3px rgba(205, 127, 50, 0.1);
+        }
+
+        .input-group textarea::placeholder {
+            color: #6a6a6a;
+        }
+
+        .help-text {
+            color: #a8a8a8;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            margin-top: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .btn {
+            background: #cd7f32;
+            color: #1d1d1f;
+            border: none;
+            padding: clamp(12px, 2vw, 14px) clamp(20px, 4vw, 28px);
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .btn:hover {
+            background: #e89847;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #3a3a3c;
+            color: #f5f5f5;
+        }
+
+        .btn-secondary:hover {
+            background: #4a4a4c;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #2a2a2c;
+            border: 1px solid #3a3a3c;
+            border-radius: 12px;
+            padding: clamp(16px, 3vw, 20px);
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: #cd7f32;
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 700;
+            color: #cd7f32;
+            margin-bottom: 6px;
+            letter-spacing: -1px;
+        }
+
+        .stat-card .label {
+            color: #a8a8a8;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            font-weight: 500;
+        }
+
+        .section-card {
+            background: #2a2a2c;
+            border: 1px solid #3a3a3c;
+            border-radius: 16px;
+            padding: clamp(20px, 4vw, 28px);
+            margin-bottom: 20px;
+        }
+
+        .section-card h2 {
+            color: #f5f5f5;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #3a3a3c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            font-weight: 600;
+        }
+
+        .word-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            padding: 16px 0;
+        }
+
+        .word-tag {
+            background: #3a3a3c;
+            color: #f5f5f5;
+            padding: clamp(6px, 1.5vw, 8px) clamp(12px, 2.5vw, 16px);
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.2s;
+            cursor: default;
+            border: 1px solid transparent;
+        }
+
+        .word-tag:hover {
+            background: #cd7f32;
+            color: #1d1d1f;
+            transform: scale(1.05);
+        }
+
+        .hashtag-list, .mention-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hashtag-item, .mention-item {
+            background: #3a3a3c;
+            padding: clamp(8px, 2vw, 10px) clamp(12px, 2.5vw, 15px);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .hashtag-item:hover, .mention-item:hover {
+            border-color: #cd7f32;
+        }
+
+        .hashtag-item .tag, .mention-item .tag {
+            color: #cd7f32;
+            font-weight: 600;
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
+        }
+
+        .hashtag-item .count, .mention-item .count {
+            background: #cd7f32;
+            color: #1d1d1f;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
+            font-weight: 700;
+        }
+
+        .tweet-preview {
+            background: #3a3a3c;
+            padding: clamp(12px, 3vw, 16px);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-right: 3px solid #cd7f32;
+        }
+
+        .tweet-preview .text {
+            margin-bottom: 10px;
+            line-height: 1.7;
+            color: #e8e8e8;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        .tweet-preview .meta {
+            color: #a8a8a8;
+            font-size: clamp(0.8rem, 2vw, 0.85rem);
+        }
+
+        .sentiment-bar {
+            display: flex;
+            height: 48px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .sentiment-positive {
+            background: #2da44e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .sentiment-neutral {
+            background: #9a6700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .sentiment-negative {
+            background: #cf222e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .chart-container {
+            margin: 20px 0;
+            padding: clamp(16px, 3vw, 20px);
+            background: #1d1d1f;
+            border-radius: 10px;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            min-width: clamp(80px, 20vw, 120px);
+            font-weight: 600;
+            color: #f5f5f5;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .bar-fill {
+            flex: 1;
+            height: 36px;
+            background: linear-gradient(90deg, #cd7f32 0%, #e89847 100%);
+            border-radius: 6px;
+            position: relative;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .bar-value {
+            padding: 0 12px;
+            color: #1d1d1f;
+            font-weight: 700;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .insights-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .insights-list li {
+            padding: clamp(12px, 3vw, 16px);
+            margin-bottom: 10px;
+            background: #3a3a3c;
+            border-radius: 8px;
+            border-right: 3px solid #cd7f32;
+            color: #e8e8e8;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        .insights-list li strong {
+            color: #cd7f32;
+        }
+
+        .emoji-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .emoji-item {
+            text-align: center;
+            padding: clamp(12px, 3vw, 16px);
+            background: #3a3a3c;
+            border-radius: 10px;
+            min-width: clamp(70px, 15vw, 90px);
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .emoji-item:hover {
+            border-color: #cd7f32;
+            transform: scale(1.05);
+        }
+
+        .emoji-item .emoji {
+            font-size: clamp(1.8rem, 5vw, 2.2rem);
+            margin-bottom: 6px;
+        }
+
+        .emoji-item .count {
+            color: #cd7f32;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .bar-label {
+                min-width: 70px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                margin-bottom: 24px;
+            }
+
+            .stats-grid {
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .section-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 أداة تحليل تغريدات تويتر</h1>
+            <p>تحليل ذكي شامل لتغريداتك مع رؤى عميقة ومعلومات قيّمة</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="tweets">الصق التغريدات هنا:</label>
+                <textarea id="tweets" placeholder="مثال:
+أحب البرمجة والتطوير 😍 #برمجة #تطوير
+اليوم كان يوماً رائعاً! تعلمت شيئاً جديداً 🎉
+@محمد شكراً على المساعدة 🙏
+التقنية تغير العالم #تقنية #ذكاء_اصطناعي"></textarea>
+                <div class="help-text">
+                    💡 ضع كل تغريدة في سطر منفصل، ويمكنك تضمين الإيموجي والإشارات والهاشتاقات
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="analyzeTweets()">🔍 تحليل شامل</button>
+                <button class="btn btn-secondary" onclick="exportResults()">📥 تصدير النتائج</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="tweetCount">0</div>
+                    <div class="label">التغريدات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="wordCount">0</div>
+                    <div class="label">الكلمات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="avgLength">0</div>
+                    <div class="label">متوسط الطول</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="hashtagCount">0</div>
+                    <div class="label">الهاشتاقات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="mentionCount">0</div>
+                    <div class="label">الإشارات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="emojiCount">0</div>
+                    <div class="label">الإيموجي</div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2>🎭 تحليل المشاعر</h2>
+                <div class="sentiment-bar">
+                    <div class="sentiment-positive" id="sentimentPositive">0%</div>
+                    <div class="sentiment-neutral" id="sentimentNeutral">0%</div>
+                    <div class="sentiment-negative" id="sentimentNegative">0%</div>
+                </div>
+                <p style="text-align: center; color: #a8a8a8; margin-top: 10px; font-size: clamp(0.85rem, 2vw, 0.95rem);">
+                    تحليل تلقائي للمشاعر بناءً على الكلمات المستخدمة
+                </p>
+            </div>
+
+            <div class="section-card">
+                <h2>💡 رؤى ذكية</h2>
+                <ul class="insights-list" id="insightsList"></ul>
+            </div>
+
+            <div class="section-card">
+                <h2>🏷️ أبرز الهاشتاقات</h2>
+                <div class="hashtag-list" id="hashtagList"></div>
+            </div>
+
+            <div class="section-card">
+                <h2>👤 الإشارات الأكثر تكراراً</h2>
+                <div class="mention-list" id="mentionList"></div>
+            </div>
+
+            <div class="section-card">
+                <h2>😊 الإيموجي المستخدمة</h2>
+                <div class="emoji-stats" id="emojiStats"></div>
+            </div>
+
+            <div class="section-card">
+                <h2>☁️ سحابة الكلمات الأكثر تكراراً</h2>
+                <div class="word-cloud" id="wordCloud"></div>
+            </div>
+
+            <div class="section-card">
+                <h2>📊 توزيع طول التغريدات</h2>
+                <div class="chart-container">
+                    <div class="bar-chart" id="lengthChart"></div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2>🌟 أطول وأقصر التغريدات</h2>
+                <div id="extremeTweets"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analysisData = null;
+
+        function analyzeTweets() {
+            const input = document.getElementById('tweets').value.trim();
+            
+            if (!input) {
+                alert('⚠️ الرجاء إدخال تغريدات للتحليل');
+                return;
+            }
+
+            const tweets = input.split('\n').filter(t => t.trim().length > 0);
+            
+            if (tweets.length === 0) {
+                alert('⚠️ لم يتم العثور على تغريدات صالحة');
+                return;
+            }
+
+            const totalTweets = tweets.length;
+            let totalWords = 0;
+            const hashtags = {};
+            const mentions = {};
+            const words = {};
+            const emojis = {};
+            const lengths = { short: 0, medium: 0, long: 0 };
+            let sentimentScores = { positive: 0, neutral: 0, negative: 0 };
+            
+            const stopWords = ['في', 'من', 'إلى', 'على', 'أن', 'هذا', 'هذه', 'التي', 'الذي', 'و', 'أو', 'لا', 'ما', 'هو', 'هي', 'عن', 'مع', 'كان', 'لم', 'لن', 'قد', 'كل', 'بعض', 'the', 'is', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'for', 'it', 'be'];
+            
+            const positiveWords = ['رائع', 'جميل', 'ممتاز', 'سعيد', 'أحب', 'مبدع', 'نجاح', 'فرحة', 'متفائل', 'إيجابي', 'great', 'love', 'happy', 'good', 'excellent', 'amazing', 'wonderful', '😊', '😍', '🎉', '❤️', '👍', '✨'];
+            
+            const negativeWords = ['سيء', 'حزين', 'أكره', 'فشل', 'صعب', 'مشكلة', 'خطأ', 'سلبي', 'bad', 'hate', 'sad', 'terrible', 'wrong', 'problem', '😢', '😞', '😠', '💔'];
+
+            let longestTweet = { text: '', length: 0 };
+            let shortestTweet = { text: tweets[0], length: tweets[0].length };
+
+            tweets.forEach(tweet => {
+                const tweetLength = tweet.length;
+                
+                if (tweetLength < 50) lengths.short++;
+                else if (tweetLength < 150) lengths.medium++;
+                else lengths.long++;
+
+                if (tweetLength > longestTweet.length) {
+                    longestTweet = { text: tweet, length: tweetLength };
+                }
+                if (tweetLength < shortestTweet.length) {
+                    shortestTweet = { text: tweet, length: tweetLength };
+                }
+
+                const tweetWords = tweet.split(/\s+/);
+                totalWords += tweetWords.length;
+
+                let tweetSentiment = 0;
+                positiveWords.forEach(word => {
+                    if (tweet.includes(word)) tweetSentiment++;
+                });
+                negativeWords.forEach(word => {
+                    if (tweet.includes(word)) tweetSentiment--;
+                });
+                
+                if (tweetSentiment > 0) sentimentScores.positive++;
+                else if (tweetSentiment < 0) sentimentScores.negative++;
+                else sentimentScores.neutral++;
+
+                const hashtagMatches = tweet.match(/#[\u0621-\u064Aa-zA-Z0-9_]+/g);
+                if (hashtagMatches) {
+                    hashtagMatches.forEach(tag => {
+                        hashtags[tag] = (hashtags[tag] || 0) + 1;
+                    });
+                }
+
+                const mentionMatches = tweet.match(/@[\u0621-\u064Aa-zA-Z0-9_]+/g);
+                if (mentionMatches) {
+                    mentionMatches.forEach(mention => {
+                        mentions[mention] = (mentions[mention] || 0) + 1;
+                    });
+                }
+
+                const emojiMatches = tweet.match(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu);
+                if (emojiMatches) {
+                    emojiMatches.forEach(emoji => {
+                        emojis[emoji] = (emojis[emoji] || 0) + 1;
+                    });
+                }
+
+                const cleanTweet = tweet.replace(/#[\u0621-\u064Aa-zA-Z0-9_]+/g, '')
+                                      .replace(/@[\u0621-\u064Aa-zA-Z0-9_]+/g, '')
+                                      .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+                                      .replace(/[^\u0621-\u064Aa-zA-Z\s]/g, ' ');
+                const tweetWordsClean = cleanTweet.split(/\s+/).filter(w => w.length > 2 && !stopWords.includes(w.toLowerCase()));
+                tweetWordsClean.forEach(word => {
+                    words[word] = (words[word] || 0) + 1;
+                });
+            });
+
+            const avgLength = Math.round(totalWords / totalTweets);
+
+            analysisData = {
+                totalTweets,
+                totalWords,
+                avgLength,
+                hashtags,
+                mentions,
+                emojis,
+                words,
+                sentimentScores,
+                lengths,
+                longestTweet,
+                shortestTweet
+            };
+
+            document.getElementById('tweetCount').textContent = totalTweets;
+            document.getElementById('wordCount').textContent = totalWords;
+            document.getElementById('avgLength').textContent = avgLength;
+            document.getElementById('hashtagCount').textContent = Object.keys(hashtags).length;
+            document.getElementById('mentionCount').textContent = Object.keys(mentions).length;
+            document.getElementById('emojiCount').textContent = Object.keys(emojis).length;
+
+            displaySentimentAnalysis(sentimentScores, totalTweets);
+            displayInsights(analysisData);
+            displayHashtags(hashtags);
+            displayMentions(mentions);
+            displayEmojis(emojis);
+            displayWordCloud(words);
+            displayLengthDistribution(lengths, totalTweets);
+            displayExtremeTweets(longestTweet, shortestTweet);
+
+            document.getElementById('results').classList.add('show');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function displaySentimentAnalysis(scores, total) {
+            const posPercent = Math.round((scores.positive / total) * 100);
+            const neuPercent = Math.round((scores.neutral / total) * 100);
+            const negPercent = Math.round((scores.negative / total) * 100);
+
+            document.getElementById('sentimentPositive').style.width = posPercent + '%';
+            document.getElementById('sentimentPositive').textContent = posPercent > 5 ? `إيجابي ${posPercent}%` : '';
+            
+            document.getElementById('sentimentNeutral').style.width = neuPercent + '%';
+            document.getElementById('sentimentNeutral').textContent = neuPercent > 5 ? `محايد ${neuPercent}%` : '';
+            
+            document.getElementById('sentimentNegative').style.width = negPercent + '%';
+            document.getElementById('sentimentNegative').textContent = negPercent > 5 ? `سلبي ${negPercent}%` : '';
+        }
+
+        function displayInsights(data) {
+            const insights = [];
+            
+            if (data.avgLength < 50) {
+                insights.push('تغريداتك قصيرة ومباشرة - رائع للتفاعل السريع! 🎯');
+            } else if (data.avgLength > 150) {
+                insights.push('تغريداتك تحتوي على تفاصيل كثيرة - مناسب للمحتوى التعليمي 📚');
+            }
+
+            if (Object.keys(data.hashtags).length > data.totalTweets * 0.5) {
+                insights.push('استخدامك للهاشتاقات ممتاز! يساعد في الوصول لجمهور أوسع 🚀');
+            }
+
+            if (Object.keys(data.emojis).length > 0) {
+                insights.push('استخدام الإيموجي يجعل تغريداتك أكثر تعبيراً وجاذبية 😊');
+            }
+
+            const sentimentTotal = data.sentimentScores.positive + data.sentimentScores.neutral + data.sentimentScores.negative;
+            if (data.sentimentScores.positive > sentimentTotal * 0.6) {
+                insights.push('محتواك إيجابي بشكل عام - استمر في نشر الطاقة الإيجابية! ✨');
+            }
+
+            if (Object.keys(data.mentions).length > 0) {
+                insights.push('تتفاعل مع الآخرين - التواصل الاجتماعي مفتاح النجاح! 🤝');
+            }
+
+            if (insights.length === 0) {
+                insights.push('تغريدات متوازنة! جرب إضافة المزيد من الهاشتاقات والإيموجي 💡');
+            }
+
+            const list = document.getElementById('insightsList');
+            list.innerHTML = insights.map(insight => `<li><strong>💡</strong> ${insight}</li>`).join('');
+        }
+
+        function displayHashtags(hashtags) {
+            const container = document.getElementById('hashtagList');
+            const sorted = Object.entries(hashtags).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            
+            if (sorted.length > 0) {
+                container.innerHTML = sorted.map(([tag, count]) => `
+                    <div class="hashtag-item">
+                        <span class="tag">${tag}</span>
+                        <span class="count">${count}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p style="color: #a8a8a8;">لا توجد هاشتاقات في التغريدات</p>';
+            }
+        }
+
+        function displayMentions(mentions) {
+            const container = document.getElementById('mentionList');
+            const sorted = Object.entries(mentions).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            
+            if (sorted.length > 0) {
+                container.innerHTML = sorted.map(([mention, count]) => `
+                    <div class="mention-item">
+                        <span class="tag">${mention}</span>
+                        <span class="count">${count}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p style="color: #a8a8a8;">لا توجد إشارات في التغريدات</p>';
+            }
+        }
+
+        function displayEmojis(emojis) {
+            const container = document.getElementById('emojiStats');
+            const sorted = Object.entries(emojis).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            
+            if (sorted.length > 0) {
+                container.innerHTML = sorted.map(([emoji, count]) => `
+                    <div class="emoji-item">
+                        <div class="emoji">${emoji}</div>
+                        <div class="count">${count}</div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p style="color: #a8a8a8; text-align: center;">لا توجد إيموجي في التغريدات</p>';
+            }
+        }
+
+        function displayWordCloud(words) {
+            const container = document.getElementById('wordCloud');
+            const sorted = Object.entries(words).sort((a, b) => b[1] - a[1]).slice(0, 25);
+            
+            if (sorted.length > 0) {
+                container.innerHTML = sorted.map(([word, count]) => {
+                    const fontSize = Math.min(12 + count * 3, 28);
+                    return `<span class="word-tag" style="font-size: ${fontSize}px">${word} (${count})</span>`;
+                }).join('');
+            } else {
+                container.innerHTML = '<p style="color: #a8a8a8;">لا توجد كلمات كافية للتحليل</p>';
+            }
+        }
+
+        function displayLengthDistribution(lengths, total) {
+            const container = document.getElementById('lengthChart');
+            const data = [
+                { label: 'قصيرة', value: lengths.short, percent: (lengths.short / total) * 100 },
+                { label: 'متوسطة', value: lengths.medium, percent: (lengths.medium / total) * 100 },
+                { label: 'طويلة', value: lengths.long, percent: (lengths.long / total) * 100 }
+            ];
+
+            container.innerHTML = data.map(item => `
+                <div class="bar-item">
+                    <div class="bar-label">${item.label}</div>
+                    <div class="bar-fill" style="width: ${item.percent}%">
+                        <div class="bar-value">${item.value} (${Math.round(item.percent)}%)</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayExtremeTweets(longest, shortest) {
+            const container = document.getElementById('extremeTweets');
+            container.innerHTML = `
+                <div class="tweet-preview">
+                    <strong style="color: #cd7f32;">🏆 أطول تغريدة:</strong>
+                    <div class="text">${longest.text}</div>
+                    <div class="meta">${longest.length} حرف</div>
+                </div>
+                <div class="tweet-preview">
+                    <strong style="color: #cd7f32;">⚡ أقصر تغريدة:</strong>
+                    <div class="text">${shortest.text}</div>
+                    <div class="meta">${shortest.length} حرف</div>
+                </div>
+            `;
+        }
+
+        function exportResults() {
+            if (!analysisData) {
+                alert('⚠️ الرجاء إجراء التحليل أولاً');
+                return;
+            }
+
+            const report = `
+📊 تقرير تحليل التغريدات
+========================
+
+📈 الإحصائيات العامة:
+- إجمالي التغريدات: ${analysisData.totalTweets}
+- إجمالي الكلمات: ${analysisData.totalWords}
+- متوسط طول التغريدة: ${analysisData.avgLength} كلمة
+- عدد الهاشتاقات: ${Object.keys(analysisData.hashtags).length}
+- عدد الإشارات: ${Object.keys(analysisData.mentions).length}
+- عدد الإيموجي: ${Object.keys(analysisData.emojis).length}
+
+🎭 تحليل المشاعر:
+- إيجابي: ${analysisData.sentimentScores.positive} تغريدة
+- محايد: ${analysisData.sentimentScores.neutral} تغريدة
+- سلبي: ${analysisData.sentimentScores.negative} تغريدة
+
+🏷️ أبرز الهاشتاقات:
+${Object.entries(analysisData.hashtags)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([tag, count]) => `- ${tag}: ${count} مرة`)
+    .join('\n')}
+
+👤 أبرز الإشارات:
+${Object.keys(analysisData.mentions).length > 0 
+    ? Object.entries(analysisData.mentions)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([mention, count]) => `- ${mention}: ${count} مرة`)
+        .join('\n')
+    : '- لا توجد إشارات'}
+
+😊 الإيموجي الأكثر استخداماً:
+${Object.keys(analysisData.emojis).length > 0
+    ? Object.entries(analysisData.emojis)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([emoji, count]) => `- ${emoji}: ${count} مرة`)
+        .join('\n')
+    : '- لا توجد إيموجي'}
+
+☁️ الكلمات الأكثر تكراراً:
+${Object.entries(analysisData.words)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)
+    .map(([word, count]) => `- ${word}: ${count} مرة`)
+    .join('\n')}
+
+📊 توزيع طول التغريدات:
+- قصيرة (<50 حرف): ${analysisData.lengths.short} تغريدة
+- متوسطة (50-150 حرف): ${analysisData.lengths.medium} تغريدة
+- طويلة (>150 حرف): ${analysisData.lengths.long} تغريدة
+
+🏆 أطول تغريدة:
+${analysisData.longestTweet.text}
+(${analysisData.longestTweet.length} حرف)
+
+⚡ أقصر تغريدة:
+${analysisData.shortestTweet.text}
+(${analysisData.shortestTweet.length} حرف)
+
+========================
+تم إنشاء التقرير بواسطة أداة تحليل التغريدات
+${new Date().toLocaleString('ar-SA')}
+            `;
+
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `تحليل_التغريدات_${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('✅ تم تصدير التقرير بنجاح!');
+        }
+    </script>
+</body>
+</html>
