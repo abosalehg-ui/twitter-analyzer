@@ -538,10 +538,8 @@ SOFTWARE.
 **تطوير: [عبدالكريم العبود]**
 
 📧 البريد الإلكتروني: [abo.saleh.g@gmail.com](mailto:abo.saleh.g@gmail.com)  
-🌐 الموقع: [https://abosalehg-ui.github.io/twitter-analyzer](https://abosalehg-ui.github.io/twitter-analyzer)  
-💼 LinkedIn: [Your Profile](https://linkedin.com/in/yourprofile)  
-🐦 Twitter: [@yourusername](https://twitter.com/yourusername)  
-💻 GitHub: [yourusername](https://github.com/ abosalehg-ui)
+🌐 الموقع: [هنا](https://abosalehg-ui.github.io/twitter-analyzer)  
+💻 GitHub: [abosalehg-ui](https://github.com/abosalehg-ui)
 
 ---
 
@@ -573,30 +571,6 @@ SOFTWARE.
 - OS: [مثال: Windows 10]
 - Browser: [مثال: Chrome 120]
 ```
-
----
-
-## 🎓 الموارد التعليمية
-
-### للمبتدئين
-- [كيف تستخدم الأداة](docs/beginner-guide.md)
-- [شرح الإحصائيات](docs/stats-explanation.md)
-- [أمثلة عملية](docs/examples.md)
-
-### للمطورين
-- [هيكل الكود](docs/code-structure.md)
-- [دليل المساهمة](CONTRIBUTING.md)
-- [API Documentation](docs/api.md)
-
----
-
-## 🏆 الشكر والتقدير
-
-شكراً خاص لـ:
-- **Anthropic**: للإلهام من تصميم Claude AI
-- **المجتمع**: لجميع الاقتراحات والملاحظات
-- **المساهمون**: لجعل هذا المشروع أفضل
-- **أنت**: لاستخدام الأداة! ❤️
 
 ---
 
@@ -949,9 +923,7 @@ We welcome your contributions to improve the tool!
 **Developed by: [ABDULKARIM ALOBUD]**
 
 📧 Email: [abo.saleh.g@gmail.com](mailto:abo.saleh.g@gmail.com)  
-🌐 Website: [https://yourwebsite.com](https://yourwebsite.com)  
-💼 LinkedIn: [Your Profile](https://linkedin.com/in/yourprofile)  
-🐦 Twitter: [@yourusername](https://twitter.com/yourusername)  
+🌐 Website: [In here](https://abosalehg-ui.github.io/twitter-analyzer)  
 💻 GitHub: [abosalehg-ui](https://github.com/abosalehg-ui)
 
 ---
@@ -963,16 +935,6 @@ We welcome your contributions to improve the tool!
 - 💬 **Issues**: [GitHub Issues](https://github.com/abosalehg-ui/twitter-analytics/issues)
 - 📖 **Documentation**: [Wiki](https://github.com/abosalehg-ui/twitter-analytics/wiki)
 - 💡 **Discussions**: [GitHub Discussions](https://github.com/abosalehg-ui/twitter-analytics/discussions)
-
----
-
-## 🏆 Acknowledgments
-
-Special thanks to:
-- **Anthropic**: For inspiration from Claude AI design
-- **Community**: For all suggestions and feedback
-- **Contributors**: For making this project better
-- **You**: For using the tool! ❤️
 
 ---
 
@@ -989,7 +951,7 @@ Special thanks to:
 
 **Twitter Analytics Tool** - Intelligence in Every Tweet
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by [ABDULKARIM]
 
 ⭐ Star us on GitHub if you find this useful!
 
