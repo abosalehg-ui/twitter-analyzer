@@ -3,33 +3,14 @@
 import { describe, it, expect } from 'vitest';
 import { buildCsv, escapeCsvField } from '../src/export/csv.js';
 import { buildJson } from '../src/export/json.js';
-import { analyze } from '../src/analysis/index.js';
+import { analyzeTweet } from '../src/analysis/index.js';
 
-const fixture = analyze([
-  'أحب البرمجة 😍 #برمجة',
-  '@محمد شكراً 🙏',
-  'this is "quoted, text" with, commas\nand newline',
-]);
+const fixture = analyzeTweet(
+  'Just shipped a new feature 🚀 What do you think? "quoted, comma" included #js @alice'
+);
 
-describe('buildCsv', () => {
-  it('starts with the header row', () => {
-    const csv = buildCsv(fixture);
-    expect(csv.split('\n')[0]).toBe('section,key,value');
-  });
-
-  it('quotes fields containing commas', () => {
-    const csv = buildCsv(fixture);
-    // any value with a comma must be surrounded by quotes
-    for (const line of csv.split('\n').slice(1)) {
-      const parts = line.split(',');
-      if (parts.length > 3) {
-        // means a comma inside a value — that field must be quoted
-        expect(line).toMatch(/"/);
-      }
-    }
-  });
-
-  it('escapes embedded quotes by doubling them (escapeCsvField)', () => {
+describe('escapeCsvField', () => {
+  it('escapes embedded quotes', () => {
     expect(escapeCsvField('he said "hi"')).toBe('"he said ""hi"""');
   });
 
@@ -38,40 +19,56 @@ describe('buildCsv', () => {
     expect(escapeCsvField(42)).toBe('42');
   });
 
-  it('quotes values with newlines', () => {
-    expect(escapeCsvField('line1\nline2')).toBe('"line1\nline2"');
-  });
-
-  it('contains all stats rows', () => {
-    const csv = buildCsv(fixture);
-    expect(csv).toMatch(/stats,.*,3/); // 3 tweets
-  });
-
-  it('includes hashtag and mention rows', () => {
-    const csv = buildCsv(fixture);
-    expect(csv).toContain('hashtag,#برمجة');
-    expect(csv).toContain('mention,@محمد');
+  it('quotes values with newlines and commas', () => {
+    expect(escapeCsvField('a,b')).toMatch(/^".*"$/);
+    expect(escapeCsvField('line\nbreak')).toMatch(/^".*"$/s);
   });
 });
 
-describe('buildJson', () => {
+describe('buildCsv (single-tweet)', () => {
+  it('starts with header row', () => {
+    expect(buildCsv(fixture).split('\n')[0]).toBe('section,key,value');
+  });
+
+  it('contains tweet, ai, algorithm, readability sections', () => {
+    const csv = buildCsv(fixture);
+    expect(csv).toContain('tweet,text');
+    expect(csv).toContain('ai,score');
+    expect(csv).toContain('algorithm,score');
+    expect(csv).toContain('readability,score');
+  });
+
+  it('includes per-action probability rows', () => {
+    const csv = buildCsv(fixture);
+    expect(csv).toContain('p_like');
+    expect(csv).toContain('p_reply');
+    expect(csv).toContain('p_block_author');
+  });
+
+  it('includes hashtags and mentions', () => {
+    const csv = buildCsv(fixture);
+    expect(csv).toContain('hashtag,#js');
+    expect(csv).toContain('mention,@alice');
+  });
+});
+
+describe('buildJson (single-tweet)', () => {
   it('produces valid JSON', () => {
-    const json = buildJson(fixture);
-    expect(() => JSON.parse(json)).not.toThrow();
+    expect(() => JSON.parse(buildJson(fixture))).not.toThrow();
   });
 
-  it('wraps analysis with metadata', () => {
+  it('wraps with v3 metadata', () => {
     const parsed = JSON.parse(buildJson(fixture));
-    expect(parsed).toHaveProperty('generatedAt');
-    expect(parsed).toHaveProperty('version', 1);
-    expect(parsed).toHaveProperty('analysis');
+    expect(parsed.version).toBe(3);
+    expect(parsed.schema).toBe('single-tweet-analysis');
+    expect(parsed.analysis).toBeDefined();
   });
 
-  it('preserves all analysis fields', () => {
+  it('preserves analysis fields', () => {
     const parsed = JSON.parse(buildJson(fixture));
-    expect(parsed.analysis.totalTweets).toBe(fixture.totalTweets);
-    expect(parsed.analysis.hashtags).toEqual(fixture.hashtags);
-    expect(parsed.analysis.sentimentScores).toEqual(fixture.sentimentScores);
+    expect(parsed.analysis.text).toBe(fixture.text);
+    expect(parsed.analysis.ai.score).toBe(fixture.ai.score);
+    expect(parsed.analysis.algorithm.score).toBe(fixture.algorithm.score);
   });
 
   it('generatedAt is a valid ISO timestamp', () => {

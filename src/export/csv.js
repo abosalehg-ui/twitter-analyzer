@@ -10,7 +10,6 @@ import { t } from '../i18n/index.js';
 /**
  * Escape a single CSV field per RFC 4180.
  * @param {string | number} value
- * @returns {string}
  */
 export function escapeCsvField(value) {
   const str = String(value);
@@ -21,57 +20,56 @@ export function escapeCsvField(value) {
 }
 
 /**
- * Convert rows (array of arrays) to a CSV string.
  * @param {Array<Array<string | number>>} rows
- * @returns {string}
  */
 function rowsToCsv(rows) {
   return rows.map((r) => r.map(escapeCsvField).join(',')).join('\n');
 }
 
 /**
- * Build a CSV report. Format: a header row identifying each section,
- * followed by key/value rows. Allows pivoting in spreadsheets.
+ * Build a CSV report from a single-tweet analysis.
  * @param {AnalysisResult} data
- * @returns {string}
  */
 export function buildCsv(data) {
   /** @type {Array<Array<string | number>>} */
-  const rows = [];
+  const rows = [['section', 'key', 'value']];
 
-  rows.push(['section', 'key', 'value']);
+  rows.push(['tweet', 'text', data.text]);
+  rows.push(['tweet', 'length', data.length]);
+  rows.push(['tweet', 'words', data.wordCount]);
+  rows.push(['tweet', 'hashtags', data.hashtags.length]);
+  rows.push(['tweet', 'mentions', data.mentions.length]);
+  rows.push(['tweet', 'emojis', data.emojis.length]);
 
-  rows.push(['stats', t('report.totalTweets'), data.totalTweets]);
-  rows.push(['stats', t('report.totalWords'), data.totalWords]);
-  rows.push(['stats', t('report.avgLength'), data.avgLength]);
-  rows.push(['stats', t('report.hashtagCount'), Object.keys(data.hashtags).length]);
-  rows.push(['stats', t('report.mentionCount'), Object.keys(data.mentions).length]);
-  rows.push(['stats', t('report.emojiCount'), Object.keys(data.emojis).length]);
+  rows.push(['sentiment', 'label', t('sentiment.' + data.sentiment.label)]);
+  rows.push(['sentiment', 'score', data.sentiment.score]);
 
-  rows.push(['sentiment', t('sentiment.positive'), data.sentimentScores.positive]);
-  rows.push(['sentiment', t('sentiment.neutral'), data.sentimentScores.neutral]);
-  rows.push(['sentiment', t('sentiment.negative'), data.sentimentScores.negative]);
+  rows.push(['ai', 'score', data.ai.score]);
+  rows.push(['ai', 'confidence', data.ai.confidence]);
+  for (const s of data.ai.signals) {
+    rows.push(['ai_signal', s.key, s.raw]);
+  }
 
-  rows.push(['length', t('length.short'), data.lengths.short]);
-  rows.push(['length', t('length.medium'), data.lengths.medium]);
-  rows.push(['length', t('length.long'), data.lengths.long]);
+  rows.push(['algorithm', 'score', data.algorithm.score]);
+  rows.push(['algorithm', 'reach', data.algorithm.reach]);
+  rows.push(['algorithm', 'raw_score', data.algorithm.rawScore]);
+  for (const c of data.algorithm.contributions) {
+    rows.push([`p_${c.action}`, 'probability', c.probability.toFixed(4)]);
+  }
 
-  const topN = (counts, n) =>
-    Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, n);
+  rows.push(['readability', 'score', data.readability.score]);
+  rows.push(['readability', 'level', data.readability.level]);
+  rows.push(['tone', 'primary', data.tone.primary]);
 
-  for (const [tag, count] of topN(data.hashtags, 10)) rows.push(['hashtag', tag, count]);
-  for (const [mention, count] of topN(data.mentions, 10)) rows.push(['mention', mention, count]);
-  for (const [emoji, count] of topN(data.emojis, 10)) rows.push(['emoji', emoji, count]);
-  for (const [word, count] of topN(data.words, 25)) rows.push(['word', word, count]);
+  for (const k of data.keywords) rows.push(['keyword', k, 1]);
+  for (const h of data.hashtags) rows.push(['hashtag', h, 1]);
+  for (const m of data.mentions) rows.push(['mention', m, 1]);
+  for (const e of data.emojis) rows.push(['emoji', e, 1]);
 
   return rowsToCsv(rows);
 }
 
 /**
- * Export the analysis as a CSV file. Prepends UTF-8 BOM so Excel opens
- * Arabic text correctly.
  * @param {AnalysisResult} data
  */
 export function exportCsv(data) {

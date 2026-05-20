@@ -1,167 +1,394 @@
 // @ts-check
 
-import { analyze, parseTweets } from './analysis/index.js';
+import { analyzeTweet } from './analysis/index.js';
+import { buildComposer } from './render/composer.js';
+import { buildTabs } from './render/tabs.js';
+import { toast } from './render/toast.js';
 import {
-  renderStatCards,
-  renderSentiment,
-  renderCountList,
-  renderWordCloud,
-  renderLengthChart,
-  renderExtremes,
-} from './render/sections.js';
-import { renderInsights } from './render/insights.js';
+  renderOverview,
+  renderAi,
+  renderAlgorithm,
+  renderEngagement,
+  renderOptimizer,
+  renderWeakness,
+  renderTone,
+  renderDetails,
+} from './render/panels.js';
+import { renderHistory } from './render/history-panel.js';
+import { renderComparison } from './render/comparison.js';
+import { generateShareCard } from './render/share-card.js';
+import { suggestRewrites } from './optimizer/rewrite-suggestions.js';
 import { exportTxt } from './export/txt.js';
 import { exportCsv } from './export/csv.js';
 import { exportJson } from './export/json.js';
 import { saveInput, loadInput, clearInput } from './storage/local.js';
-import { t } from './i18n/index.js';
+import {
+  loadHistory,
+  addToHistory,
+  removeFromHistory,
+  clearHistory,
+  getHistoryEntry,
+} from './storage/history.js';
+import { loadLocale, saveLocale, loadTheme, saveTheme } from './storage/preferences.js';
+import { t, setLocale, getLocale } from './i18n/index.js';
 
-/** @type {import('./analysis/index.js').AnalysisResult | null} */
-let analysisData = null;
-
-/** @type {ReturnType<typeof setTimeout> | null} */
-let saveDebounce = null;
+/** @typedef {import('./analysis/index.js').AnalysisResult} AnalysisResult */
 
 const $ = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
 
-/**
- * @param {string} message
- * @param {'error' | 'success'} kind
- */
-function showStatus(message, kind) {
-  const status = $('status');
-  status.textContent = message;
-  status.classList.remove('error', 'success');
-  status.classList.add(kind, 'show');
-  if (kind === 'success') {
-    setTimeout(() => status.classList.remove('show'), 4000);
+const state = {
+  /** @type {AnalysisResult | null} */
+  current: null,
+  /** @type {AnalysisResult | null} */
+  compareWith: null,
+  /** @type {ReturnType<typeof buildComposer> | null} */
+  primaryComposer: null,
+  /** @type {ReturnType<typeof buildComposer> | null} */
+  compareComposer: null,
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  saveDebounce: null,
+  tabs: /** @type {ReturnType<typeof buildTabs> | null} */ (null),
+};
+
+// ====================================================================
+//  i18n + theme
+// ====================================================================
+
+function applyLocale() {
+  const locale = getLocale();
+  document.documentElement.setAttribute('lang', locale);
+  document.documentElement.setAttribute('dir', t('app.dir'));
+
+  // Static labels
+  const title = $('appTitle');
+  if (title) title.textContent = t('app.title');
+  const subtitle = $('appSubtitle');
+  if (subtitle) subtitle.textContent = t('app.subtitle');
+  document.title = t('app.title');
+
+  const setBtn = (id, key) => {
+    const e = document.getElementById(id);
+    if (e) e.textContent = t(key);
+  };
+  setBtn('analyzeBtn', 'btn.analyze');
+  setBtn('clearBtn', 'btn.clear');
+  setBtn('compareBtn', 'btn.compare');
+  setBtn('exportTxtBtn', 'btn.exportTxt');
+  setBtn('exportCsvBtn', 'btn.exportCsv');
+  setBtn('exportJsonBtn', 'btn.exportJson');
+  setBtn('shareCardBtn', 'btn.shareCard');
+  setBtn('saveHistoryBtn', 'btn.saveHistory');
+
+  const langBtn = $('langBtn');
+  if (langBtn) langBtn.textContent = t('app.langSwitch');
+
+  const historyHeading = $('historyHeading');
+  if (historyHeading) historyHeading.textContent = t('history.title');
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+function toggleLocale() {
+  const next = getLocale() === 'ar' ? 'en' : 'ar';
+  setLocale(next);
+  saveLocale(next);
+  applyLocale();
+  rebuildComposers();
+  state.tabs = rebuildTabs();
+  if (state.current) {
+    renderAll(state.current);
+    if (state.compareWith) {
+      renderComparison(/** @type {HTMLElement} */ ($('comparisonView')), state.current, state.compareWith);
+    }
+  }
+  renderHistoryList();
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  saveTheme(next);
+}
+
+// ====================================================================
+//  Composer + tabs setup
+// ====================================================================
+
+function rebuildComposers() {
+  const host = /** @type {HTMLElement} */ ($('composerHost'));
+  const previousValue = state.primaryComposer?.textarea.value ?? loadInput();
+  host.replaceChildren();
+  state.primaryComposer = buildComposer({ id: 'tweet', value: previousValue });
+  host.appendChild(state.primaryComposer.root);
+  state.primaryComposer.textarea.addEventListener('input', handleInputChange);
+  state.primaryComposer.textarea.addEventListener('keydown', handleKeyShortcut);
+
+  // Rebuild compare composer if active
+  if (state.compareComposer) {
+    const cmpHost = /** @type {HTMLElement} */ ($('compareHost'));
+    const previousCompareValue = state.compareComposer.textarea.value;
+    cmpHost.replaceChildren();
+    state.compareComposer = buildComposer({
+      id: 'tweetCompare',
+      value: previousCompareValue,
+      labelKey: 'compare.tweetB',
+    });
+    cmpHost.appendChild(state.compareComposer.root);
   }
 }
 
-function clearStatus() {
-  const status = $('status');
-  status.classList.remove('show', 'error', 'success');
-  status.textContent = '';
+function rebuildTabs() {
+  const navHost = /** @type {HTMLElement} */ ($('tabsNav'));
+  const panelsHost = /** @type {HTMLElement} */ ($('tabsPanels'));
+  const t = buildTabs();
+  navHost.replaceChildren(t.nav);
+  panelsHost.replaceChildren(t.panels);
+  return t;
+}
+
+// ====================================================================
+//  Analyze + render
+// ====================================================================
+
+function handleKeyShortcut(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    runAnalysis();
+  }
+  if (e.key === 'Escape') {
+    runClear();
+  }
+}
+
+function getText() {
+  return state.primaryComposer?.textarea.value.trim() ?? '';
 }
 
 function runAnalysis() {
-  clearStatus();
-  const input = /** @type {HTMLTextAreaElement} */ ($('tweets')).value.trim();
-
-  if (!input) {
-    showStatus(t('error.empty'), 'error');
+  const text = getText();
+  if (!text) {
+    toast(t('status.empty'), 'error');
     return;
   }
+  state.current = analyzeTweet(text);
 
-  const tweets = parseTweets(input);
-  if (tweets.length === 0) {
-    showStatus(t('error.invalid'), 'error');
-    return;
+  // Show results + compare button
+  $('results').classList.add('show');
+  const cmpBtn = $('compareBtn');
+  cmpBtn.hidden = false;
+
+  renderAll(state.current);
+
+  // If comparison composer is open AND has text, analyze it too
+  if (state.compareComposer) {
+    const txt = state.compareComposer.textarea.value.trim();
+    if (txt) {
+      state.compareWith = analyzeTweet(txt);
+      renderComparisonView();
+    }
   }
 
-  analysisData = analyze(tweets);
-
-  renderStatCards(analysisData);
-  renderSentiment(analysisData.sentimentScores, analysisData.totalTweets);
-  renderInsights(analysisData);
-  renderCountList($('hashtagList'), analysisData.hashtags, {
-    itemClass: 'hashtag-item',
-    keyClass: 'tag',
-    valueClass: 'count',
-    emptyMessage: t('empty.hashtags'),
-  });
-  renderCountList($('mentionList'), analysisData.mentions, {
-    itemClass: 'mention-item',
-    keyClass: 'tag',
-    valueClass: 'count',
-    emptyMessage: t('empty.mentions'),
-  });
-  renderCountList($('emojiStats'), analysisData.emojis, {
-    itemClass: 'emoji-item',
-    keyClass: 'emoji',
-    valueClass: 'count',
-    emptyMessage: t('empty.emojis'),
-    keyAsBlock: true,
-  });
-  renderWordCloud(analysisData.words);
-  renderLengthChart(analysisData.lengths, analysisData.totalTweets);
-  renderExtremes(analysisData.longestTweet, analysisData.shortestTweet);
-
+  // Scroll into view (guard for environments without matchMedia, e.g. jsdom)
+  const reducedMotion =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const results = $('results');
-  results.classList.add('show');
-
   if (typeof results.scrollIntoView === 'function') {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     results.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
   }
 }
 
-/**
- * @param {() => void} action
- */
-function withAnalysis(action) {
-  if (!analysisData) {
-    showStatus(t('error.noAnalysis'), 'error');
+function renderAll(data) {
+  if (!state.tabs) return;
+  const t = state.tabs;
+  renderOverview(t.panelOf('overview'), data);
+  renderAi(t.panelOf('ai'), data);
+  renderAlgorithm(t.panelOf('algorithm'), data);
+  renderEngagement(t.panelOf('engagement'), data);
+  renderOptimizer(t.panelOf('optimizer'), data, suggestRewrites(data.text, data.algorithm.score), applyOptimization);
+  renderWeakness(t.panelOf('weakness'), data);
+  renderTone(t.panelOf('tone'), data);
+  renderDetails(t.panelOf('details'), data);
+}
+
+function applyOptimization(text) {
+  if (!state.primaryComposer) return;
+  state.primaryComposer.textarea.value = text;
+  state.primaryComposer.textarea.dispatchEvent(new Event('input'));
+  runAnalysis();
+}
+
+function renderComparisonView() {
+  if (!state.current || !state.compareWith) return;
+  const view = /** @type {HTMLElement} */ ($('comparisonView'));
+  view.hidden = false;
+  renderComparison(view, state.current, state.compareWith);
+}
+
+// ====================================================================
+//  Compare mode
+// ====================================================================
+
+function toggleCompareMode() {
+  if (state.compareComposer) {
+    // Cancel
+    state.compareComposer = null;
+    state.compareWith = null;
+    const cmpHost = /** @type {HTMLElement} */ ($('compareHost'));
+    cmpHost.hidden = true;
+    cmpHost.replaceChildren();
+    $('comparisonView').hidden = true;
+    $('compareBtn').textContent = t('btn.compare');
     return;
   }
-  action();
-  showStatus(t('success.export'), 'success');
+
+  const cmpHost = /** @type {HTMLElement} */ ($('compareHost'));
+  state.compareComposer = buildComposer({
+    id: 'tweetCompare',
+    labelKey: 'compare.tweetB',
+  });
+  cmpHost.replaceChildren(state.compareComposer.root);
+  cmpHost.hidden = false;
+  $('compareBtn').textContent = t('btn.cancelCompare');
+
+  // Run analysis flow with current text + compare on next analyze click
+  toast(t('btn.compare'), 'info');
 }
 
-function runExportTxt() {
-  withAnalysis(() => exportTxt(/** @type {NonNullable<typeof analysisData>} */ (analysisData)));
-}
-
-function runExportCsv() {
-  withAnalysis(() => exportCsv(/** @type {NonNullable<typeof analysisData>} */ (analysisData)));
-}
-
-function runExportJson() {
-  withAnalysis(() => exportJson(/** @type {NonNullable<typeof analysisData>} */ (analysisData)));
-}
+// ====================================================================
+//  Clear / save / share / export
+// ====================================================================
 
 function runClear() {
-  const textarea = /** @type {HTMLTextAreaElement} */ ($('tweets'));
-  textarea.value = '';
+  if (!state.primaryComposer) return;
+  state.primaryComposer.textarea.value = '';
+  state.primaryComposer.textarea.dispatchEvent(new Event('input'));
   clearInput();
-  clearStatus();
+  state.current = null;
+  state.compareWith = null;
   $('results').classList.remove('show');
-  analysisData = null;
-  textarea.focus();
+  $('comparisonView').hidden = true;
+  $('compareBtn').hidden = true;
+  toast(t('status.cleared'), 'info');
 }
+
+function runSaveHistory() {
+  if (!state.current) {
+    toast(t('status.noAnalysis'), 'error');
+    return;
+  }
+  addToHistory({
+    text: state.current.text,
+    analyzedAt: state.current.analyzedAt,
+    aiScore: state.current.ai.score,
+    algorithmScore: state.current.algorithm.score,
+    primaryTone: state.current.tone.primary,
+    length: state.current.length,
+  });
+  toast(t('status.saved'), 'success');
+  renderHistoryList();
+}
+
+function runShareCard() {
+  if (!state.current) {
+    toast(t('status.noAnalysis'), 'error');
+    return;
+  }
+  try {
+    generateShareCard(state.current);
+    toast(t('status.cardGenerated'), 'success');
+  } catch {
+    toast(t('status.noAnalysis'), 'error');
+  }
+}
+
+function withCurrent(fn) {
+  if (!state.current) {
+    toast(t('status.noAnalysis'), 'error');
+    return;
+  }
+  fn(state.current);
+  toast(t('status.exported'), 'success');
+}
+
+// ====================================================================
+//  History
+// ====================================================================
+
+function renderHistoryList() {
+  renderHistory(/** @type {HTMLElement} */ ($('historyList')), loadHistory(), {
+    onLoad: (id) => {
+      const e = getHistoryEntry(id);
+      if (!e || !state.primaryComposer) return;
+      state.primaryComposer.textarea.value = e.text;
+      state.primaryComposer.textarea.dispatchEvent(new Event('input'));
+      runAnalysis();
+    },
+    onCompare: (id) => {
+      const e = getHistoryEntry(id);
+      if (!e || !state.current) {
+        toast(t('status.noAnalysis'), 'error');
+        return;
+      }
+      state.compareWith = analyzeTweet(e.text);
+      renderComparisonView();
+    },
+    onDelete: (id) => {
+      removeFromHistory(id);
+      renderHistoryList();
+    },
+    onClearAll: () => {
+      clearHistory();
+      renderHistoryList();
+      toast(t('status.historyCleared'), 'info');
+    },
+  });
+}
+
+// ====================================================================
+//  Input persistence
+// ====================================================================
 
 function handleInputChange() {
-  const textarea = /** @type {HTMLTextAreaElement} */ ($('tweets'));
-  if (saveDebounce) clearTimeout(saveDebounce);
-  saveDebounce = setTimeout(() => saveInput(textarea.value), 400);
+  if (state.saveDebounce) clearTimeout(state.saveDebounce);
+  state.saveDebounce = setTimeout(() => {
+    if (state.primaryComposer) saveInput(state.primaryComposer.textarea.value);
+  }, 400);
 }
 
-function restoreInput() {
-  const saved = loadInput();
-  if (!saved) return;
-  const textarea = /** @type {HTMLTextAreaElement} */ ($('tweets'));
-  textarea.value = saved;
-  showStatus(t('success.restored'), 'success');
-}
+// ====================================================================
+//  Init
+// ====================================================================
 
 export function init() {
-  analysisData = null;
+  // Locale + theme preferences
+  setLocale(loadLocale());
+  applyTheme(loadTheme());
+
+  applyLocale();
+  rebuildComposers();
+  state.tabs = rebuildTabs();
+
+  // Wire static buttons
   $('analyzeBtn').addEventListener('click', runAnalysis);
-  $('exportBtn').addEventListener('click', runExportTxt);
+  $('clearBtn').addEventListener('click', runClear);
+  $('compareBtn').addEventListener('click', toggleCompareMode);
+  $('exportTxtBtn').addEventListener('click', () => withCurrent(exportTxt));
+  $('exportCsvBtn').addEventListener('click', () => withCurrent(exportCsv));
+  $('exportJsonBtn').addEventListener('click', () => withCurrent(exportJson));
+  $('shareCardBtn').addEventListener('click', runShareCard);
+  $('saveHistoryBtn').addEventListener('click', runSaveHistory);
+  $('langBtn').addEventListener('click', toggleLocale);
+  $('themeBtn').addEventListener('click', toggleTheme);
 
-  const csvBtn = document.getElementById('exportCsvBtn');
-  if (csvBtn) csvBtn.addEventListener('click', runExportCsv);
-
-  const jsonBtn = document.getElementById('exportJsonBtn');
-  if (jsonBtn) jsonBtn.addEventListener('click', runExportJson);
-
-  const clearBtn = document.getElementById('clearBtn');
-  if (clearBtn) clearBtn.addEventListener('click', runClear);
-
-  const textarea = document.getElementById('tweets');
-  if (textarea) textarea.addEventListener('input', handleInputChange);
-
-  restoreInput();
+  // Restore + render history
+  if (loadInput() && state.primaryComposer) {
+    toast(t('status.restored'), 'info');
+  }
+  renderHistoryList();
 }
 
 if (typeof window !== 'undefined' && !window.__TWITTER_ANALYZER_TEST__) {

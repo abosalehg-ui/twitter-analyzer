@@ -2,147 +2,75 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>أداة تحليل تغريدات تويتر</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1d1d1f" />
+    <title>محلّل التغريدات الذكي</title>
     <link rel="stylesheet" href="./styles/main.css" />
   </head>
   <body>
-    <div class="container">
-      <header class="header">
-        <h1>📊 أداة تحليل تغريدات تويتر</h1>
-        <p>تحليل ذكي شامل لتغريداتك مع رؤى عميقة ومعلومات قيّمة</p>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">🐦</span>
+          <div class="brand-text">
+            <h1 id="appTitle">محلّل التغريدات الذكي</h1>
+            <p id="appSubtitle">تشخيص عميق لتغريدتك</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            id="themeBtn"
+            class="btn-icon"
+            aria-label="Toggle theme"
+            title="Toggle theme"
+          >
+            🌓
+          </button>
+          <button type="button" id="langBtn" class="btn-icon-text" aria-label="Switch language">
+            EN
+          </button>
+        </div>
       </header>
 
-      <main>
-        <section class="input-section" aria-labelledby="inputLabel">
-          <div class="input-group">
-            <label for="tweets" id="inputLabel">الصق التغريدات هنا:</label>
-            <textarea
-              id="tweets"
-              aria-describedby="inputHelp"
-              placeholder="مثال:
-أحب البرمجة والتطوير 😍 #برمجة #تطوير
-اليوم كان يوماً رائعاً! تعلمت شيئاً جديداً 🎉
-@محمد شكراً على المساعدة 🙏
-التقنية تغير العالم #تقنية #ذكاء_اصطناعي"
-            ></textarea>
-            <div class="help-text" id="inputHelp">
-              💡 ضع كل تغريدة في سطر منفصل، ويمكنك تضمين الإيموجي والإشارات والهاشتاقات
-            </div>
-            <div
-              class="status-message"
-              id="status"
-              role="alert"
-              aria-live="polite"
-              aria-atomic="true"
-            ></div>
-          </div>
-          <div class="button-group">
-            <button class="btn" id="analyzeBtn" type="button">🔍 تحليل شامل</button>
-            <button class="btn btn-secondary" id="clearBtn" type="button" aria-label="مسح الإدخال">
-              🗑️ مسح
+      <main class="app-main">
+        <section class="composer-section" aria-labelledby="appTitle">
+          <div id="composerHost" class="composer-host"></div>
+
+          <div class="action-row">
+            <button class="btn btn-primary" id="analyzeBtn" type="button">🔍 حلّل التغريدة</button>
+            <button class="btn btn-secondary" id="clearBtn" type="button">🗑️ مسح</button>
+            <button class="btn btn-secondary" id="compareBtn" type="button" hidden>
+              ⚔️ قارن مع تغريدة أخرى
             </button>
           </div>
-          <div class="button-group export-group" aria-label="خيارات التصدير">
-            <button class="btn btn-secondary" id="exportBtn" type="button" aria-label="تصدير كملف نصي">
-              📥 TXT
-            </button>
-            <button class="btn btn-secondary" id="exportCsvBtn" type="button" aria-label="تصدير كملف CSV">
-              📊 CSV
-            </button>
-            <button class="btn btn-secondary" id="exportJsonBtn" type="button" aria-label="تصدير كملف JSON">
-              🗂️ JSON
-            </button>
-          </div>
+
+          <div id="compareHost" class="compare-host" hidden></div>
         </section>
 
         <section class="results" id="results" aria-live="polite">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="number" id="tweetCount">0</div>
-              <div class="label">التغريدات</div>
-            </div>
-            <div class="stat-card">
-              <div class="number" id="wordCount">0</div>
-              <div class="label">الكلمات</div>
-            </div>
-            <div class="stat-card">
-              <div class="number" id="avgLength">0</div>
-              <div class="label">متوسط الطول</div>
-            </div>
-            <div class="stat-card">
-              <div class="number" id="hashtagCount">0</div>
-              <div class="label">الهاشتاقات</div>
-            </div>
-            <div class="stat-card">
-              <div class="number" id="mentionCount">0</div>
-              <div class="label">الإشارات</div>
-            </div>
-            <div class="stat-card">
-              <div class="number" id="emojiCount">0</div>
-              <div class="label">الإيموجي</div>
-            </div>
+          <nav id="tabsNav" class="tabs-host" aria-label="analysis sections"></nav>
+          <div id="tabsPanels" class="tabs-panels-host"></div>
+
+          <div class="post-actions">
+            <button class="btn btn-secondary" id="exportTxtBtn" type="button">📥 TXT</button>
+            <button class="btn btn-secondary" id="exportCsvBtn" type="button">📊 CSV</button>
+            <button class="btn btn-secondary" id="exportJsonBtn" type="button">🗂️ JSON</button>
+            <button class="btn btn-secondary" id="shareCardBtn" type="button">🖼️ بطاقة مشاركة</button>
+            <button class="btn btn-secondary" id="saveHistoryBtn" type="button">💾 حفظ في السجل</button>
           </div>
 
-          <section class="section-card" aria-labelledby="sentimentHeading">
-            <h2 id="sentimentHeading">🎭 تحليل المشاعر</h2>
-            <div class="sentiment-bar" role="img" aria-label="توزيع المشاعر">
-              <div class="sentiment-positive" id="sentimentPositive">0%</div>
-              <div class="sentiment-neutral" id="sentimentNeutral">0%</div>
-              <div class="sentiment-negative" id="sentimentNegative">0%</div>
-            </div>
-            <div class="sentiment-donut-wrap">
-              <div id="sentimentDonut" class="sentiment-donut"></div>
-            </div>
-            <p
-              style="
-                text-align: center;
-                color: #a8a8a8;
-                margin-top: 10px;
-                font-size: clamp(0.85rem, 2vw, 0.95rem);
-              "
-            >
-              تحليل تلقائي للمشاعر بناءً على الكلمات المستخدمة
-            </p>
-          </section>
-
-          <section class="section-card" aria-labelledby="insightsHeading">
-            <h2 id="insightsHeading">💡 رؤى ذكية</h2>
-            <ul class="insights-list" id="insightsList"></ul>
-          </section>
-
-          <section class="section-card" aria-labelledby="hashtagsHeading">
-            <h2 id="hashtagsHeading">🏷️ أبرز الهاشتاقات</h2>
-            <div class="hashtag-list" id="hashtagList"></div>
-          </section>
-
-          <section class="section-card" aria-labelledby="mentionsHeading">
-            <h2 id="mentionsHeading">👤 الإشارات الأكثر تكراراً</h2>
-            <div class="mention-list" id="mentionList"></div>
-          </section>
-
-          <section class="section-card" aria-labelledby="emojisHeading">
-            <h2 id="emojisHeading">😊 الإيموجي المستخدمة</h2>
-            <div class="emoji-stats" id="emojiStats"></div>
-          </section>
-
-          <section class="section-card" aria-labelledby="wordsHeading">
-            <h2 id="wordsHeading">☁️ سحابة الكلمات الأكثر تكراراً</h2>
-            <div class="word-cloud" id="wordCloud"></div>
-          </section>
-
-          <section class="section-card" aria-labelledby="lengthHeading">
-            <h2 id="lengthHeading">📊 توزيع طول التغريدات</h2>
-            <div class="chart-container">
-              <div class="bar-chart" id="lengthChart"></div>
-            </div>
-          </section>
-
-          <section class="section-card" aria-labelledby="extremesHeading">
-            <h2 id="extremesHeading">🌟 أطول وأقصر التغريدات</h2>
-            <div id="extremeTweets"></div>
-          </section>
+          <div id="comparisonView" class="comparison-view" hidden></div>
         </section>
+
+        <section class="history-section" aria-labelledby="historyHeading">
+          <h2 id="historyHeading" class="section-title">🗂️ السجل</h2>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <footer class="app-footer">
+          <p>twitter-analyzer · v3.0 · client-side only</p>
+        </footer>
       </main>
     </div>
     <script type="module" src="./src/main.js"></script>

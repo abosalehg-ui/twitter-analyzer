@@ -8,21 +8,19 @@ import { t } from '../i18n/index.js';
  */
 
 /**
- * Build a JSON string of the full analysis result with a metadata wrapper.
  * @param {AnalysisResult} data
- * @returns {string}
  */
 export function buildJson(data) {
   const payload = {
     generatedAt: new Date().toISOString(),
-    version: 1,
+    version: 3,
+    schema: 'single-tweet-analysis',
     analysis: data,
   };
   return JSON.stringify(payload, null, 2);
 }
 
 /**
- * Export the analysis as a JSON file.
  * @param {AnalysisResult} data
  */
 export function exportJson(data) {
