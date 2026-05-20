@@ -2,10 +2,11 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0-cd7f32)
+![Version](https://img.shields.io/badge/version-2.0.0-cd7f32)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Language](https://img.shields.io/badge/language-Arabic-green)
 ![Platform](https://img.shields.io/badge/platform-Web-orange)
+![Tests](https://img.shields.io/badge/tests-95%20passing-2da44e)
 
 **أداة ويب متقدمة لتحليل التغريدات واستخراج رؤى ذكية من المحتوى النصي**
 
@@ -81,11 +82,21 @@
 - **تمييز بصري**: إطارات ملونة
 - **معلومات شاملة**: تفاصيل كل تغريدة
 
-### 💾 تصدير البيانات
-- **ملف نصي شامل**: جميع النتائج والإحصائيات
-- **تنسيق منظم**: سهل القراءة والمشاركة
-- **تاريخ ووقت**: ختم زمني للتحليل
-- **قابل للطباعة**: جاهز للاستخدام الفوري
+### 💾 تصدير البيانات (3 صيغ)
+- **TXT 📥**: تقرير نصي شامل بتنسيق سهل القراءة
+- **CSV 📊**: جدول بيانات مع تطهير RFC 4180 و UTF-8 BOM لـ Excel/العربية
+- **JSON 🗂️**: بيانات منظّمة مع `generatedAt` و `version` للتكامل مع أدوات أخرى
+- **ختم زمني**: تاريخ ووقت التحليل في كل ملف
+
+### 💼 حفظ تلقائي
+- **localStorage**: حفظ مؤجَّل لمحتوى الإدخال أثناء الكتابة
+- **استعادة تلقائية**: عند فتح الأداة مجدداً، يُسترجع آخر إدخال
+- **زر مسح 🗑️**: لتفريغ الإدخال والنتائج والتخزين بضغطة واحدة
+
+### 📈 رسوم بيانية تفاعلية (SVG)
+- **Donut chart**: مخطط دائري لتوزيع المشاعر
+- **Bar chart**: رسم SVG حقيقي لتوزيع الأطوال مع تدرّج لوني
+- **متجاوب**: يتكيف مع حجم الشاشة بدون فقدان جودة
 
 ---
 
@@ -109,10 +120,12 @@
 
 ### 3️⃣ التصدير
 ```
-1. بعد التحليل، انقر "📥 تصدير النتائج"
-2. سيتم تحميل ملف TXT
-3. الملف يحتوي على جميع البيانات
-4. شارك أو احفظ النتائج
+1. بعد التحليل، اختر صيغة التصدير:
+   • TXT 📥 — تقرير نصي للقراءة والمشاركة
+   • CSV 📊 — جدول للفتح في Excel أو Sheets
+   • JSON 🗂️ — بيانات منظّمة للأتمتة
+2. سيتم تحميل الملف تلقائياً
+3. شارك أو احفظ النتائج
 ```
 
 ---
@@ -268,40 +281,48 @@
 - **بدون خوادم**: لا يتم إرسال بيانات لأي خادم
 - **بدون تتبع**: لا توجد أكواد تتبع
 - **بدون ملفات تعريف**: لا استخدام للكوكيز
-- **بدون تخزين**: لا حفظ للبيانات بعد الإغلاق
+- **حفظ محلي فقط**: localStorage على جهازك حصراً، يمكن مسحه بزر "🗑️ مسح"
 
 ### 🛡️ الأمان
 - **كود شفاف**: مفتوح المصدر للمراجعة
 - **بدون API**: لا اتصالات خارجية
+- **حماية XSS**: جميع المخرجات تستخدم `textContent` بدون `innerHTML` للبيانات المستخدم
 - **آمن تماماً**: مناسب للبيانات الحساسة
-- **لا يمكن اختراقه**: لا توجد قاعدة بيانات
+- **اختبارات أمنية**: 95 اختبار آلي يشمل فحص XSS صريح
 
 ---
 
 ## 🛠️ التقنيات المستخدمة
 
-### Frontend
+### Frontend (Runtime)
 ```
-├── HTML5: البنية الأساسية
+├── HTML5: البنية الدلالية + ARIA
 ├── CSS3: التصميم والتنسيق
-│   ├── Flexbox: التخطيط المرن
-│   ├── Grid: الشبكة المتجاوبة
+│   ├── Flexbox + Grid: التخطيطات
 │   ├── Clamp(): أحجام مرنة
-│   └── Animations: الرسوم المتحركة
-└── JavaScript (Vanilla ES6+)
-    ├── DOM Manipulation
-    ├── RegEx: تحليل النصوص
-    ├── Array Methods: معالجة البيانات
-    ├── Blob API: تصدير الملفات
-    └── Event Listeners: التفاعل
+│   ├── prefers-reduced-motion: الوصولية
+│   └── Animations: انتقالات سلسة
+├── JavaScript (Vanilla ES Modules)
+│   ├── DOM Manipulation (آمن — بدون innerHTML للبيانات)
+│   ├── RegEx + Unicode word boundaries
+│   ├── Map / Set: عدّ الكلمات وتسريع البحث
+│   ├── Blob API: تصدير الملفات
+│   ├── localStorage: حفظ الإدخال محلياً
+│   └── i18n: ar.js / en.js
+└── SVG: رسوم بيانية تفاعلية (donut + bars)
 ```
 
-### لا توجد مكتبات خارجية
-- ✅ بدون jQuery
-- ✅ بدون React
-- ✅ بدون Bootstrap
-- ✅ بدون Dependencies
-- ✅ كود نقي 100%
+### Dev tooling (لا تُضمَّن في الـ runtime)
+```
+├── Vite — dev server + production build
+├── Vitest + jsdom — 95 اختبار آلي
+├── ESLint — linting
+└── Prettier — تنسيق الكود
+```
+
+### بدون runtime dependencies
+- ✅ بدون jQuery / React / Bootstrap
+- ✅ كل ما يصل المتصفح هو HTML/CSS/JS وحدها (~22KB JS مضغوط)
 
 ---
 
@@ -345,7 +366,7 @@ Output:
 
 ### تعديل الألوان
 ```css
-/* في ملف HTML داخل <style> */
+/* في styles/main.css */
 body {
     background: #your-color; /* لون الخلفية */
 }
@@ -356,19 +377,21 @@ body {
 
 ### تعديل الكلمات المستبعدة
 ```javascript
-const stopWords = [
+// في src/data/stopwords.js
+export const STOP_WORDS = new Set([
     'في', 'من', 'إلى', 'على', // أضف كلماتك
-];
+]);
 ```
 
 ### تعديل كلمات المشاعر
 ```javascript
-const positiveWords = [
+// في src/data/sentiment-dict.js
+export const POSITIVE_WORDS = new Set([
     'رائع', 'جميل', // أضف كلمات إيجابية
-];
-const negativeWords = [
+]);
+export const NEGATIVE_WORDS = new Set([
     'سيء', 'حزين', // أضف كلمات سلبية
-];
+]);
 ```
 
 ---
@@ -391,7 +414,10 @@ const negativeWords = [
 **نعم**، التحليل يدعم العربية والإنجليزية معاً.
 
 ### ❓ هل يمكن حفظ التحليل؟
-**نعم**، استخدم زر "تصدير النتائج" لحفظ ملف نصي كامل.
+**نعم**، يمكنك التصدير بثلاث صيغ: TXT للقراءة، CSV للجداول، و JSON للأتمتة.
+
+### ❓ هل يُحفظ إدخالي تلقائياً؟
+**نعم**، يُحفظ نص الإدخال محلياً في متصفحك (localStorage) ويُستعاد عند الفتح القادم. يمكن مسحه بزر "🗑️ مسح".
 
 ### ❓ هل تعمل على الجوال؟
 **نعم**، الأداة متجاوبة بالكامل وتعمل على جميع الأجهزة.
@@ -406,39 +432,70 @@ const negativeWords = [
 
 ## 🚀 التثبيت والاستخدام
 
-### طريقة 1: استخدام مباشر
+### طريقة 1: استخدام مباشر (للمستخدمين)
+افتح: https://abosalehg-ui.github.io/twitter-analyzer/
+
+### طريقة 2: التشغيل محلياً للتطوير
 ```bash
-1. حمّل الملف HTML
-2. افتحه في المتصفح
-3. ابدأ الاستخدام فوراً
+git clone https://github.com/abosalehg-ui/twitter-analyzer.git
+cd twitter-analyzer
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-### طريقة 2: استضافة على GitHub Pages
+### طريقة 3: بناء للإنتاج
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/twitter-analytics-tool.git
-
-# Navigate to directory
-cd twitter-analytics-tool
-
-# Push to GitHub
-git add .
-git commit -m "Initial commit"
-git push origin main
-
-# Enable GitHub Pages in repository settings
+npm run build      # ينتج dist/
+npm run preview    # معاينة dist/ محلياً
 ```
 
-### طريقة 3: استضافة محلية
-```bash
-# باستخدام Python
-python -m http.server 8000
+---
 
-# أو باستخدام Node.js
-npx serve
+## 🧑‍💻 للمطورين
 
-# ثم افتح: http://localhost:8000
+### بنية المشروع
 ```
+twitter-analyzer/
+├── index.html                  ← markup فقط + <script type="module">
+├── styles/main.css             ← CSS مستخرج
+├── src/
+│   ├── main.js                 ← entry point
+│   ├── analysis/               ← منطق التحليل الخالص (قابل للاختبار)
+│   │   ├── tokenize.js
+│   │   ├── sentiment.js
+│   │   ├── extractors.js
+│   │   ├── stats.js
+│   │   └── index.js
+│   ├── render/                 ← طبقة العرض (DOM آمن + SVG)
+│   │   ├── dom.js              ← el() helper آمن من XSS
+│   │   ├── sections.js
+│   │   ├── insights.js
+│   │   └── charts.js           ← SVG donut + bars
+│   ├── export/                 ← TXT / CSV / JSON
+│   ├── i18n/                   ← ar.js / en.js / index.js
+│   ├── data/                   ← stopwords + sentiment-dict
+│   └── storage/local.js        ← localStorage
+├── tests/                      ← 95 اختبار Vitest
+└── .github/workflows/deploy.yml ← نشر تلقائي على Pages
+```
+
+### الـ npm scripts
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | تشغيل dev server مع HMR |
+| `npm run build` | بناء الإنتاج إلى `dist/` |
+| `npm run preview` | معاينة `dist/` محلياً |
+| `npm test` | تشغيل 95 اختبار مرة واحدة |
+| `npm run test:watch` | اختبارات في وضع watch |
+| `npm run test:coverage` | تقرير تغطية الاختبارات |
+| `npm run lint` | فحص ESLint |
+| `npm run format` | تنسيق الكود بـ Prettier |
+
+### النشر
+كل push على `main` يشغّل `.github/workflows/deploy.yml` الذي:
+1. ينفّذ الاختبارات (يمنع نشر كود مكسور)
+2. يبني المشروع بـ Vite
+3. ينشر `dist/` تلقائياً على GitHub Pages
 
 ---
 
@@ -651,11 +708,21 @@ SOFTWARE.
 - **Visual Distinction**: Colored frames
 - **Comprehensive Information**: Details for each tweet
 
-### 💾 Data Export
-- **Comprehensive Text File**: All results and statistics
-- **Organized Format**: Easy to read and share
-- **Date and Time**: Timestamp for analysis
-- **Printable**: Ready for immediate use
+### 💾 Data Export (3 formats)
+- **TXT 📥**: Comprehensive text report, easy to read
+- **CSV 📊**: Spreadsheet-ready with RFC 4180 escaping and UTF-8 BOM (Excel/Arabic compatible)
+- **JSON 🗂️**: Structured payload with `generatedAt` + `version` for automation
+- **Timestamp**: Date and time recorded in every file
+
+### 💼 Auto-save
+- **localStorage**: debounced save of your textarea content while typing
+- **Auto-restore**: last input is restored when you reopen the tool
+- **Clear button 🗑️**: wipes input, results, and storage in one click
+
+### 📈 Interactive Charts (SVG)
+- **Donut chart**: sentiment distribution as a real SVG donut
+- **Bar chart**: SVG length-distribution chart with gradient fill
+- **Responsive**: scales without losing quality
 
 ---
 
@@ -679,10 +746,12 @@ SOFTWARE.
 
 ### 3️⃣ Export
 ```
-1. After analysis, click "📥 Export Results"
-2. A TXT file will download
-3. File contains all data
-4. Share or save results
+1. After analysis, pick a format:
+   • TXT 📥 — readable text report
+   • CSV 📊 — spreadsheet for Excel / Sheets
+   • JSON 🗂️ — structured data for automation
+2. File downloads automatically
+3. Share or save results
 ```
 
 ---
@@ -752,78 +821,108 @@ SOFTWARE.
 - **No Servers**: No data sent to any server
 - **No Tracking**: No tracking codes
 - **No Cookies**: No cookie usage
-- **No Storage**: No data saved after closing
+- **Local-only storage**: input persisted to localStorage on your device only; clearable via the 🗑️ Clear button
 
 ### 🛡️ Security
 - **Transparent Code**: Open source for review
 - **No API**: No external connections
+- **XSS-hardened**: all user data rendered via `textContent`; no `innerHTML` for user input
 - **Completely Safe**: Suitable for sensitive data
-- **Unhackable**: No database exists
+- **Tested**: 95 automated tests including an explicit XSS guard
 
 ---
 
 ## 🛠️ Technologies Used
 
-### Frontend
+### Frontend (Runtime)
 ```
-├── HTML5: Basic structure
-├── CSS3: Design and styling
-│   ├── Flexbox: Flexible layout
-│   ├── Grid: Responsive grid
-│   ├── Clamp(): Flexible sizes
-│   └── Animations: Animations
-└── JavaScript (Vanilla ES6+)
-    ├── DOM Manipulation
-    ├── RegEx: Text analysis
-    ├── Array Methods: Data processing
-    ├── Blob API: File export
-    └── Event Listeners: Interaction
+├── HTML5: semantic markup + ARIA
+├── CSS3: layout and styling
+│   ├── Flexbox + Grid
+│   ├── Clamp(): fluid sizes
+│   ├── prefers-reduced-motion: a11y
+│   └── Animations
+├── JavaScript (Vanilla ES Modules)
+│   ├── Safe DOM (no innerHTML for user data)
+│   ├── RegEx + Unicode word boundaries
+│   ├── Map / Set: counting & fast lookup
+│   ├── Blob API: file export
+│   ├── localStorage: input persistence
+│   └── i18n: ar.js / en.js
+└── SVG: interactive charts (donut + bars)
 ```
 
-### No External Libraries
-- ✅ No jQuery
-- ✅ No React
-- ✅ No Bootstrap
-- ✅ No Dependencies
-- ✅ 100% Pure Code
+### Dev tooling (not shipped to the browser)
+```
+├── Vite — dev server + production build
+├── Vitest + jsdom — 95 automated tests
+├── ESLint — linting
+└── Prettier — code formatting
+```
+
+### No runtime dependencies
+- ✅ No jQuery / React / Bootstrap
+- ✅ Only HTML/CSS/JS ship to the browser (~22KB JS gzipped)
 
 ---
 
 ## 🚀 Installation and Usage
 
-### Method 1: Direct Use
+### Method 1: Use directly (end users)
+Open: https://abosalehg-ui.github.io/twitter-analyzer/
+
+### Method 2: Run locally (developers)
 ```bash
-1. Download HTML file
-2. Open in browser
-3. Start using immediately
+git clone https://github.com/abosalehg-ui/twitter-analyzer.git
+cd twitter-analyzer
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-### Method 2: Host on GitHub Pages
+### Method 3: Production build
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/twitter-analytics-tool.git
-
-# Navigate to directory
-cd twitter-analytics-tool
-
-# Push to GitHub
-git add .
-git commit -m "Initial commit"
-git push origin main
-
-# Enable GitHub Pages in repository settings
+npm run build      # outputs to dist/
+npm run preview    # preview dist/ locally
 ```
 
-### Method 3: Local Hosting
-```bash
-# Using Python
-python -m http.server 8000
+---
 
-# Or using Node.js
-npx serve
+## 🧑‍💻 For Developers
 
-# Then open: http://localhost:8000
+### Project structure
 ```
+twitter-analyzer/
+├── index.html                  ← markup only + <script type="module">
+├── styles/main.css             ← extracted CSS
+├── src/
+│   ├── main.js                 ← entry point
+│   ├── analysis/               ← pure analysis logic (testable)
+│   ├── render/                 ← DOM + SVG rendering (XSS-safe)
+│   ├── export/                 ← TXT / CSV / JSON
+│   ├── i18n/                   ← ar.js / en.js / index.js
+│   ├── data/                   ← stopwords + sentiment-dict
+│   └── storage/local.js        ← localStorage
+├── tests/                      ← 95 Vitest tests
+└── .github/workflows/deploy.yml ← auto-deploy to Pages
+```
+
+### npm scripts
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | dev server with HMR |
+| `npm run build` | production build to `dist/` |
+| `npm run preview` | preview `dist/` locally |
+| `npm test` | run 95 tests once |
+| `npm run test:watch` | tests in watch mode |
+| `npm run test:coverage` | coverage report |
+| `npm run lint` | ESLint check |
+| `npm run format` | Prettier formatting |
+
+### Deployment
+Every push to `main` triggers `.github/workflows/deploy.yml`, which:
+1. Runs the test suite (prevents shipping broken code)
+2. Builds with Vite
+3. Deploys `dist/` to GitHub Pages
 
 ---
 
