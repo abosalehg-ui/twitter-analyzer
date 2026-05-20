@@ -1,4 +1,4 @@
-# Twitter Analytics Tool - محلّل التغريدات الذكي
+# محلّل التغريدات الذكي · Smart Tweet Analyzer
 
 <div align="center">
 
@@ -10,455 +10,161 @@
 
 **تحليل عميق لتغريدة واحدة: كشف الذكاء الاصطناعي، توافقية خوارزمية X، وتوصيات للتحسين**
 
-[العربية](#arabic) | [English](#english)
+_Single-tweet deep diagnostics: AI detection, X-algorithm fit, and improvement suggestions_
+
+[العربية](#arabic) · [English](#english) · [🌐 Live Demo](https://abosalehg-ui.github.io/twitter-analyzer)
 
 </div>
 
 ---
 
 <a name="arabic"></a>
+
 ## 📋 نظرة عامة
 
-**محلّل التغريدات الذكي v3.0** هو تطبيق ويب يُحلّل تغريدة واحدة على عمق متعدد الأبعاد: كشف احتمالية كون النص مكتوباً بالذكاء الاصطناعي، حساب توافقية النص مع خوارزمية X الجديدة ([xai-org/x-algorithm](https://github.com/xai-org/x-algorithm)) عبر 15 احتمال تفاعل، اقتراح إعادات صياغة محسّنة، ومقارنة A/B بين تغريدتين. يعمل التطبيق بالكامل محلياً في المتصفح بدون أي خادم — خصوصية كاملة.
+**محلّل التغريدات الذكي v3.0** تطبيق ويب يُحلّل تغريدة واحدة عبر **8 أبعاد تشخيصية** بدون أي خادم أو API خارجي. كل المعالجة تتم محلياً في متصفحك.
 
-### الميزات الجديدة في v3.0
-- 🤖 **كشف الذكاء الاصطناعي**: 9 إشارات استدلالية + قاموس عبارات LLM (عربي/إنجليزي)
-- 🐦 **توافقية خوارزمية X**: محرك تنبؤ بـ15 احتمال تفاعل (like, reply, repost, share, click, profile_click, video_view, photo_expand, dwell, follow, not_interested, block, mute, report, hide) وفق نموذج xai-org
-- 🪄 **مُحسِّن ذكي**: 3 إعادات صياغة (أقصر/سؤال/أكثر إيجابية) مع درجة متوقعة جديدة
-- 📊 **التفاعل المتوقع**: عرض احتمالات الإجراءات الـ15
-- ✅ **فحص نقاط الضعف**: قائمة تحقّق قبل النشر
-- 🎯 **كشف النبرة**: 6 فئات (رسمي/ودود/تعليمي/ترويجي/تحفيزي/تساؤلي) مع أفضل وقت للنشر
-- ⚔️ **مقارنة A/B**: حقلان جنبيان لمقارنة تغريدتين
-- 🗂️ **سجل التغريدات**: آخر 20 تحليلاً في localStorage
-- 🖼️ **بطاقة مشاركة**: تصدير PNG بكل النتائج
-- 🌓 **وضع داكن/فاتح** + تبديل لغة (AR/EN) محفوظ في localStorage
+### ما الجديد في v3.0؟
+
+- 🤖 **كشف الذكاء الاصطناعي**: 9 إشارات استدلالية موزونة تُقدّر احتمالية كون النص مكتوباً بـ LLM
+- 🐦 **توافقية خوارزمية X**: محرك تنبؤ مُصمَّم وفق [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) يحسب درجة التوافق عبر 15 احتمال تفاعل
+- 🪄 **مُحسِّن ذكي**: 3 إعادات صياغة (أقصر / سؤال / إيجابي) مع درجة جديدة متوقعة لكل واحدة
+- ⚔️ **مقارنة A/B** بين تغريدتين
+- 🗂️ **سجل التحليلات** (آخر 20)
+- 🖼️ **بطاقة مشاركة PNG** بكل النتائج
 
 ---
 
-## ✨ المميزات الرئيسية
+## ✨ الميزات بالتفصيل
 
-### 📊 إحصائيات شاملة
-- **عدد التغريدات**: إحصاء تلقائي للتغريدات المحللة
-- **إجمالي الكلمات**: حساب شامل لجميع الكلمات المستخدمة
-- **متوسط الطول**: متوسط عدد الكلمات لكل تغريدة
-- **عدد الهاشتاقات**: إحصاء الهاشتاقات الفريدة
-- **عدد الإشارات**: حساب الحسابات المذكورة (@)
-- **عدد الإيموجي**: إحصاء الرموز التعبيرية المستخدمة
+### 🤖 كشف الذكاء الاصطناعي
 
-### 🎭 تحليل المشاعر الذكي
-- **تصنيف تلقائي**: إيجابي / محايد / سلبي
-- **عرض مرئي**: شريط تفاعلي يوضح النسب المئوية
-- **خوارزمية ذكية**: تحليل بناءً على الكلمات والإيموجي
-- **دقة عالية**: تحديد المشاعر بشكل موثوق
+نتيجة 0-100 مع مستوى ثقة (low/medium/high يعتمد على طول النص). تعتمد على 9 إشارات موزونة:
 
-### 💡 رؤى ذكية مخصصة
-- **تحليل نمط الكتابة**: تقييم أسلوب التغريد (قصير/طويل)
-- **استخدام الهاشتاقات**: تقييم فعالية الهاشتاقات
-- **التفاعل الاجتماعي**: تحليل نمط الإشارات
-- **نصائح تلقائية**: اقتراحات لتحسين المحتوى
-- **تقييم الإيجابية**: قياس الطاقة الإيجابية في المحتوى
+| الإشارة | الوزن | الفكرة |
+|---|---|---|
+| تباين أطوال الجمل (Burstiness) | 18% | LLM تنتج جملاً منتظمة، البشر يتفاوتون |
+| تنوّع المفردات (TTR) | 14% | TTR مرتفع جداً على نص قصير = مشبوه |
+| الرسمية | 12% | نسبة الكلمات الطويلة (≥7 أحرف) |
+| دقة الترقيم | 12% | em-dash، علامات تنصيص ذكية، semicolons |
+| عبارات LLM شائعة | 15% | قاموس عربي/إنجليزي (~80 عبارة: "delve", "furthermore", "في الواقع", "تجدر الإشارة"...) |
+| كثافة الإيموجي | 8% | غياب الإيموجي على نص طويل = مشبوه |
+| غياب الـ slang/typos | 8% | "lol", "يلا", "ngl" = إشارات بشرية قوية |
+| نمط الهاشتاقات | 7% | تجميعها في النهاية بترتيب صارم = LLM |
+| بدايات الجمل | 6% | تكرار "In/As/While/إن/مع" |
 
-### 🏷️ تحليل الهاشتاقات
-- **الترتيب الذكي**: أكثر 10 هاشتاقات استخداماً
-- **عداد التكرار**: عدد مرات استخدام كل هاشتاق
-- **عرض منظم**: بطاقات ملونة واضحة
-- **تصنيف تلقائي**: ترتيب حسب الشعبية
+> ⚠️ **إخلاء مسؤولية**: تقدير استدلالي وليس حكماً قطعياً — حتى الأدوات التجارية تخطئ في النصوص القصيرة كالتغريدات.
 
-### 👤 تحليل الإشارات (@)
-- **استخراج تلقائي**: جميع الإشارات في التغريدات
-- **الأكثر ذكراً**: ترتيب الحسابات حسب التكرار
-- **عرض مرتب**: أفضل 10 حسابات مذكورة
-- **إحصائيات دقيقة**: عدد مرات ذكر كل حساب
+### 🐦 توافقية خوارزمية X
 
-### 😊 تحليل الإيموجي
-- **استخراج شامل**: جميع الرموز التعبيرية
-- **عرض مرئي**: الإيموجي بحجم كبير وواضح
-- **ترتيب الشعبية**: الأكثر استخداماً أولاً
-- **عداد لكل رمز**: عدد مرات الاستخدام
+مبنية على نموذج الـ Grok-based transformer الجديد من xAI. الخوارزمية تتنبأ بـ **15 احتمالاً للتفاعل** وتجمعها وفق المعادلة:
 
-### ☁️ سحابة الكلمات
-- **25 كلمة**: أكثر الكلمات تكراراً
-- **حجم ديناميكي**: حجم الكلمة يعكس تكرارها
-- **تجاهل ذكي**: استبعاد الكلمات الشائعة (في، من، على...)
-- **دعم ثنائي اللغة**: عربي وإنجليزي
-
-### 📊 توزيع طول التغريدات
-- **رسم بياني تفاعلي**: تصنيف بصري واضح
-- **ثلاث فئات**: قصيرة (<50) / متوسطة (50-150) / طويلة (>150)
-- **نسب مئوية**: عرض التوزيع بالنسب
-- **ألوان مميزة**: تمييز بصري لكل فئة
-
-### 🌟 أطول وأقصر التغريدات
-- **عرض النصوص**: التغريدات كاملة
-- **عدد الأحرف**: دقة في القياس
-- **تمييز بصري**: إطارات ملونة
-- **معلومات شاملة**: تفاصيل كل تغريدة
-
-### 💾 تصدير البيانات (3 صيغ)
-- **TXT 📥**: تقرير نصي شامل بتنسيق سهل القراءة
-- **CSV 📊**: جدول بيانات مع تطهير RFC 4180 و UTF-8 BOM لـ Excel/العربية
-- **JSON 🗂️**: بيانات منظّمة مع `generatedAt` و `version` للتكامل مع أدوات أخرى
-- **ختم زمني**: تاريخ ووقت التحليل في كل ملف
-
-### 💼 حفظ تلقائي
-- **localStorage**: حفظ مؤجَّل لمحتوى الإدخال أثناء الكتابة
-- **استعادة تلقائية**: عند فتح الأداة مجدداً، يُسترجع آخر إدخال
-- **زر مسح 🗑️**: لتفريغ الإدخال والنتائج والتخزين بضغطة واحدة
-
-### 📈 رسوم بيانية تفاعلية (SVG)
-- **Donut chart**: مخطط دائري لتوزيع المشاعر
-- **Bar chart**: رسم SVG حقيقي لتوزيع الأطوال مع تدرّج لوني
-- **متجاوب**: يتكيف مع حجم الشاشة بدون فقدان جودة
-
----
-
-## 🚀 كيفية الاستخدام
-
-### 1️⃣ إدخال التغريدات
 ```
-1. افتح الأداة في المتصفح
-2. الصق تغريداتك في مربع النص
-3. ضع كل تغريدة في سطر منفصل
-4. يمكنك تضمين الهاشتاقات والإشارات والإيموجي
+Final Score = Σ (weight_i × P(action_i))
 ```
 
-### 2️⃣ التحليل
-```
-1. انقر على زر "🔍 تحليل شامل"
-2. انتظر ثوانٍ معدودة
-3. شاهد النتائج الشاملة
-4. استكشف جميع الإحصائيات والرؤى
-```
+| الإجراءات الإيجابية | الإجراءات السلبية |
+|---|---|
+| like, reply, repost, share | not_interested, hide |
+| click, profile_click | block_author, mute_author |
+| video_view, photo_expand | report |
+| dwell, follow | |
 
-### 3️⃣ التصدير
-```
-1. بعد التحليل، اختر صيغة التصدير:
-   • TXT 📥 — تقرير نصي للقراءة والمشاركة
-   • CSV 📊 — جدول للفتح في Excel أو Sheets
-   • JSON 🗂️ — بيانات منظّمة للأتمتة
-2. سيتم تحميل الملف تلقائياً
-3. شارك أو احفظ النتائج
-```
+**النتيجة**: درجة 0-100 + تصنيف الوصول المتوقع (منخفض/متوسط/جيد/ممتاز) + توصيات قابلة للتنفيذ.
 
----
+**العوامل المؤثرة (استدلالية)**:
+- ✅ المنطقة المثلى للطول (70-150 حرف) → bonus
+- ✅ وجود سؤال يحفّز الـ replies (وزن عالٍ)
+- ✅ النبرة الإيجابية والإيموجي المعتدل
+- ❌ الروابط الخارجية → خصم
+- ❌ Engagement bait ("RT to win", "اشترك ولايك") → خصم كبير
+- ❌ النبرة السامة (تُحفّز block/mute/report)
+- ❌ الهاشتاقات/الإشارات المفرطة
 
-## 🎯 حالات الاستخدام
+### 🪄 مُحسِّن التغريدة
 
-### 📱 للأفراد والمؤثرين
-- **تحليل الأسلوب**: فهم نمط كتابتك
-- **تحسين المحتوى**: رؤى لتطوير التغريدات
-- **قياس الإيجابية**: معرفة مدى إيجابية محتواك
-- **استراتيجية الهاشتاقات**: معرفة أكثر الهاشتاقات استخداماً
+يقترح **3 إعادات صياغة** مع تقدير الدرجة الجديدة:
 
-### 📊 للمسوقين ومديري المحتوى
-- **تحليل الحملات**: فهم أداء المحتوى
-- **استراتيجية الكلمات المفتاحية**: معرفة الكلمات الأكثر استخداماً
-- **تحليل المشاعر**: قياس ردود الفعل
-- **تقارير شاملة**: تصدير بيانات للعرض
+1. **أقصر**: حذف الحشو والاختصار للمنطقة المثلى
+2. **سؤال**: إضافة "ما رأيكم؟ / what do you think?" لتحفيز الردود
+3. **إيجابي**: استبدال الكلمات السلبية + علامة إيجابية
 
-### ✍️ للكتّاب والصحفيين
-- **تحليل اللغة**: فهم الأسلوب اللغوي
-- **قياس التنوع**: معرفة ثراء المفردات
-- **إحصائيات دقيقة**: بيانات للأبحاث
-- **توثيق المحتوى**: حفظ وتحليل التغريدات
+### 📊 لوحات التحليل الـ8 (Tabs)
 
-### 🎓 للباحثين والأكاديميين
-- **تحليل النصوص**: دراسة أنماط الكتابة
-- **تحليل المشاعر**: أبحاث علمية
-- **إحصائيات لغوية**: بيانات دقيقة
-- **دراسات حالة**: أمثلة واقعية
+| التبويب | المحتوى |
+|---|---|
+| **نظرة عامة** | 3 مؤشرات دائرية (gauges) + إحصاءات سريعة |
+| **كشف AI** | الدرجة + 9 إشارات مفصّلة + العبارات المكتشفة |
+| **توافقية X** | الدرجة + أهم 5 إيجابيات + أسوأ 3 سلبيات + توصيات |
+| **التفاعل المتوقع** | الـ15 احتمالاً ببارات نسبية |
+| **تحسين** | بطاقات إعادة الصياغة |
+| **نقاط الضعف** | قائمة تحقّق من 10 معايير قبل النشر |
+| **النبرة** | الفئة المكتشفة + أفضل وقت للنشر + مؤشر القراءة |
+| **تفاصيل** | كلمات مفتاحية + هاشتاقات + إشارات + إيموجي |
 
-### 🏢 للشركات والمؤسسات
-- **تحليل العلامة التجارية**: فهم صوت العلامة
-- **قياس الأداء**: تتبع المحتوى
-- **تحسين الاستراتيجية**: رؤى قابلة للتنفيذ
-- **تقارير للإدارة**: بيانات موثقة
+### 🎚️ صندوق التغريدة الذكي
 
----
+- **عدّاد دائري** ملوّن (أخضر في الـ sweet-spot، أصفر عند 240، أحمر عند 280+)
+- **شريط تقدّم** مع منطقة 70-150 مُميَّزة
+- **اختصارات لوحة المفاتيح**: `Cmd/Ctrl+Enter` للتحليل · `Esc` للمسح
+- **حفظ تلقائي** للمسودة في localStorage
+- **حد 280 حرفاً** مع تحذير سلس
 
-## 🎨 التصميم والواجهة
+### ⚔️ مقارنة A/B
 
-### 🌙 نظام الألوان (مستوحى من Claude AI)
-| العنصر | اللون | الوصف |
-|--------|-------|-------|
-| الخلفية الرئيسية | `#1d1d1f` | داكن ناعم |
-| البطاقات | `#2a2a2c` | رمادي داكن |
-| الحدود | `#3a3a3c` | رمادي فاتح |
-| اللون الأساسي | `#cd7f32` | برونزي/ذهبي |
-| النصوص | `#e8e8e8` | أبيض ناعم |
-| النصوص الثانوية | `#a8a8a8` | رمادي فاتح |
+بعد تحليل تغريدة، اضغط زر "⚔️ قارن مع تغريدة أخرى" → يفتح composer ثانٍ → يعرض جدولاً جنبياً يوضّح الأفضل في كل معيار.
 
-### 📱 التصميم المتجاوب
-- **Desktop**: تخطيط شبكي متعدد الأعمدة
-- **Tablet**: تكيف تلقائي للشاشات المتوسطة
-- **Mobile**: عرض عمودي محسّن للجوال
-- **أحجام مرنة**: نصوص وعناصر تتكيف تلقائياً
+### 🗂️ السجل + 🖼️ بطاقة المشاركة
 
-### ✨ المؤثرات البصرية
-- **انتقالات سلسة**: حركات ناعمة للعناصر
-- **تأثيرات Hover**: استجابة عند التمرير
-- **رسوم متحركة**: ظهور تدريجي للنتائج
-- **ألوان ديناميكية**: تمييز بصري واضح
+- **سجل**: آخر 20 تحليلاً في localStorage مع زر فتح/مقارنة/حذف
+- **بطاقة PNG**: تصدير canvas-based بحجم 1200×630 مناسب للمشاركة على المنصات
 
----
+### 🌐 ثنائية اللغة + Theme
 
-## 💻 المتطلبات التقنية
+- **AR/EN** يقلب `dir="rtl"` ↔ `dir="ltr"` ويحدّث كل النصوص ديناميكياً
+- **Dark/Light** قابل للتبديل مع حفظ التفضيل
+- **ARIA كاملة** (tablist/tab/tabpanel) + `prefers-reduced-motion`
 
-### المتصفحات المدعومة
-- ✅ **Google Chrome** (موصى به)
-- ✅ **Mozilla Firefox**
-- ✅ **Microsoft Edge**
-- ✅ **Safari**
-- ✅ **Opera**
-- ✅ أي متصفح حديث يدعم ES6
+### 💾 التصدير
 
-### الحد الأدنى من المواصفات
-- متصفح حديث (2020 أو أحدث)
-- JavaScript مفعّل
-- دقة شاشة 320px × 568px أو أعلى
-- اتصال بالإنترنت (لتحميل الصفحة فقط)
-
-### الأداء
-- **سرعة التحليل**: فوري (< 1 ثانية لـ 100 تغريدة)
-- **الذاكرة**: استخدام خفيف للموارد
-- **التوافق**: يعمل على جميع الأجهزة
-- **الحجم**: ملف واحد خفيف
-
----
-
-## 📊 البيانات المُحللة
-
-### إحصائيات أساسية (6 بطاقات)
-```
-├── إجمالي التغريدات
-├── إجمالي الكلمات
-├── متوسط الطول
-├── عدد الهاشتاقات
-├── عدد الإشارات
-└── عدد الإيموجي
-```
-
-### تحليلات متقدمة (8 أقسام)
-```
-├── 🎭 تحليل المشاعر (إيجابي/محايد/سلبي)
-├── 💡 رؤى ذكية (نصائح مخصصة)
-├── 🏷️ أبرز الهاشتاقات (أكثر 10)
-├── 👤 الإشارات الأكثر تكراراً (أكثر 10)
-├── 😊 الإيموجي المستخدمة (أكثر 10)
-├── ☁️ سحابة الكلمات (25 كلمة)
-├── 📊 توزيع طول التغريدات (رسم بياني)
-└── 🌟 أطول وأقصر التغريدات
-```
-
----
-
-## 📂 تنسيق ملف التصدير
-
-### محتوى الملف النصي
-```text
-📊 تقرير تحليل التغريدات
-========================
-
-📈 الإحصائيات العامة:
-- إجمالي التغريدات: XX
-- إجمالي الكلمات: XXX
-- متوسط طول التغريدة: XX كلمة
-- عدد الهاشتاقات: XX
-- عدد الإشارات: XX
-- عدد الإيموجي: XX
-
-🎭 تحليل المشاعر:
-- إيجابي: XX تغريدة
-- محايد: XX تغريدة
-- سلبي: XX تغريدة
-
-🏷️ أبرز الهاشتاقات:
-- #هاشتاق1: XX مرة
-- #هاشتاق2: XX مرة
-...
-
-[جميع الأقسام الأخرى]
-
-========================
-تم إنشاء التقرير بواسطة أداة تحليل التغريدات
-[التاريخ والوقت]
-```
+| الصيغة | المحتوى |
+|---|---|
+| **TXT 📥** | تقرير نصي مقروء |
+| **CSV 📊** | RFC 4180 + UTF-8 BOM لـ Excel/العربية + احتمالات الـ15 |
+| **JSON 🗂️** | بيانات منظّمة v3 schema للأتمتة |
+| **PNG 🖼️** | بطاقة مشاركة بصرية |
 
 ---
 
 ## 🔒 الخصوصية والأمان
 
-### ✅ ضمانات الخصوصية
-- **معالجة محلية**: جميع العمليات في متصفحك
-- **بدون خوادم**: لا يتم إرسال بيانات لأي خادم
-- **بدون تتبع**: لا توجد أكواد تتبع
-- **بدون ملفات تعريف**: لا استخدام للكوكيز
-- **حفظ محلي فقط**: localStorage على جهازك حصراً، يمكن مسحه بزر "🗑️ مسح"
-
-### 🛡️ الأمان
-- **كود شفاف**: مفتوح المصدر للمراجعة
-- **بدون API**: لا اتصالات خارجية
-- **حماية XSS**: جميع المخرجات تستخدم `textContent` بدون `innerHTML` للبيانات المستخدم
-- **آمن تماماً**: مناسب للبيانات الحساسة
-- **اختبارات أمنية**: 95 اختبار آلي يشمل فحص XSS صريح
+- ✅ **Client-side بالكامل**: لا خادم، لا API، لا تتبّع، لا كوكيز
+- ✅ **localStorage محلي فقط**: المسودة + السجل + التفضيلات كلها على جهازك
+- ✅ **XSS-hardened**: كل بيانات المستخدم تُعرض عبر `textContent` — لا `innerHTML`
+- ✅ **128 اختبار** بما فيها حارس XSS صريح
+- ✅ **مفتوح المصدر** بالكامل تحت رخصة MIT
 
 ---
 
-## 🛠️ التقنيات المستخدمة
+## 🚀 الاستخدام
 
-### Frontend (Runtime)
-```
-├── HTML5: البنية الدلالية + ARIA
-├── CSS3: التصميم والتنسيق
-│   ├── Flexbox + Grid: التخطيطات
-│   ├── Clamp(): أحجام مرنة
-│   ├── prefers-reduced-motion: الوصولية
-│   └── Animations: انتقالات سلسة
-├── JavaScript (Vanilla ES Modules)
-│   ├── DOM Manipulation (آمن — بدون innerHTML للبيانات)
-│   ├── RegEx + Unicode word boundaries
-│   ├── Map / Set: عدّ الكلمات وتسريع البحث
-│   ├── Blob API: تصدير الملفات
-│   ├── localStorage: حفظ الإدخال محلياً
-│   └── i18n: ar.js / en.js
-└── SVG: رسوم بيانية تفاعلية (donut + bars)
-```
+### المستخدمون
+🌐 افتح: **https://abosalehg-ui.github.io/twitter-analyzer**
 
-### Dev tooling (لا تُضمَّن في الـ runtime)
-```
-├── Vite — dev server + production build
-├── Vitest + jsdom — 95 اختبار آلي
-├── ESLint — linting
-└── Prettier — تنسيق الكود
-```
+### المطورون
 
-### بدون runtime dependencies
-- ✅ بدون jQuery / React / Bootstrap
-- ✅ كل ما يصل المتصفح هو HTML/CSS/JS وحدها (~22KB JS مضغوط)
-
----
-
-## 📝 أمثلة الاستخدام
-
-### مثال 1: تحليل تغريدات شخصية
-```
-Input:
-أحب البرمجة والتطوير 😍 #برمجة
-اليوم تعلمت شيئاً جديداً 🎉
-@محمد شكراً على المساعدة 🙏
-
-Output:
-✅ 3 تغريدات
-✅ 12 كلمة
-✅ متوسط 4 كلمات
-✅ 1 هاشتاق (#برمجة)
-✅ 1 إشارة (@محمد)
-✅ 3 إيموجي
-✅ مشاعر: 100% إيجابية
-```
-
-### مثال 2: تحليل حملة تسويقية
-```
-Input:
-عرض خاص! خصم 50% #عروض #تخفيضات
-تسوق الآن واحصل على هدية مجانية 🎁
-لا تفوت الفرصة #تسوق #عروض
-
-Output:
-✅ 3 تغريدات
-✅ 14 كلمة
-✅ 4 هاشتاقات فريدة
-✅ #عروض: الأكثر تكراراً (2 مرة)
-✅ كلمات مفتاحية: عرض، خصم، تسوق
-```
-
----
-
-## 🔧 التخصيص والتطوير
-
-### تعديل الألوان
-```css
-/* في styles/main.css */
-body {
-    background: #your-color; /* لون الخلفية */
-}
-.btn {
-    background: #your-color; /* لون الأزرار */
-}
-```
-
-### تعديل الكلمات المستبعدة
-```javascript
-// في src/data/stopwords.js
-export const STOP_WORDS = new Set([
-    'في', 'من', 'إلى', 'على', // أضف كلماتك
-]);
-```
-
-### تعديل كلمات المشاعر
-```javascript
-// في src/data/sentiment-dict.js
-export const POSITIVE_WORDS = new Set([
-    'رائع', 'جميل', // أضف كلمات إيجابية
-]);
-export const NEGATIVE_WORDS = new Set([
-    'سيء', 'حزين', // أضف كلمات سلبية
-]);
-```
-
----
-
-## 📖 الأسئلة الشائعة
-
-### ❓ هل الأداة مجانية؟
-**نعم**، الأداة مجانية بالكامل للاستخدام الشخصي والتجاري.
-
-### ❓ هل أحتاج Twitter API؟
-**لا**، الأداة تعمل بدون API. انسخ تغريداتك والصقها مباشرة.
-
-### ❓ هل بياناتي آمنة؟
-**نعم**، جميع العمليات محلية في متصفحك. لا يتم إرسال أي شيء للإنترنت.
-
-### ❓ كم عدد التغريدات المدعومة؟
-**غير محدود**، لكن يُنصح بـ 100-500 تغريدة للأداء الأمثل.
-
-### ❓ هل تدعم الأداة الإنجليزية؟
-**نعم**، التحليل يدعم العربية والإنجليزية معاً.
-
-### ❓ هل يمكن حفظ التحليل؟
-**نعم**، يمكنك التصدير بثلاث صيغ: TXT للقراءة، CSV للجداول، و JSON للأتمتة.
-
-### ❓ هل يُحفظ إدخالي تلقائياً؟
-**نعم**، يُحفظ نص الإدخال محلياً في متصفحك (localStorage) ويُستعاد عند الفتح القادم. يمكن مسحه بزر "🗑️ مسح".
-
-### ❓ هل تعمل على الجوال؟
-**نعم**، الأداة متجاوبة بالكامل وتعمل على جميع الأجهزة.
-
-### ❓ كيف أحصل على تغريداتي من تويتر؟
-1. افتح حسابك على تويتر
-2. اذهب لملفك الشخصي
-3. انسخ التغريدات يدوياً
-4. أو استخدم أدوات النسخ المساعدة
-
----
-
-## 🚀 التثبيت والاستخدام
-
-### طريقة 1: استخدام مباشر (للمستخدمين)
-افتح: https://abosalehg-ui.github.io/twitter-analyzer/
-
-### طريقة 2: التشغيل محلياً للتطوير
 ```bash
 git clone https://github.com/abosalehg-ui/twitter-analyzer.git
 cd twitter-analyzer
 npm install
-npm run dev        # http://localhost:5173
+npm run dev           # http://localhost:5173
 ```
 
-### طريقة 3: بناء للإنتاج
+### الإنتاج
+
 ```bash
-npm run build      # ينتج dist/
-npm run preview    # معاينة dist/ محلياً
+npm run build         # → dist/
+npm run preview       # معاينة dist/
 ```
 
 ---
@@ -466,484 +172,435 @@ npm run preview    # معاينة dist/ محلياً
 ## 🧑‍💻 للمطورين
 
 ### بنية المشروع
+
 ```
-twitter-analyzer/
-├── index.html                  ← markup فقط + <script type="module">
-├── styles/main.css             ← CSS مستخرج
-├── src/
-│   ├── main.js                 ← entry point
-│   ├── analysis/               ← منطق التحليل الخالص (قابل للاختبار)
-│   │   ├── tokenize.js
-│   │   ├── sentiment.js
-│   │   ├── extractors.js
-│   │   ├── stats.js
-│   │   └── index.js
-│   ├── render/                 ← طبقة العرض (DOM آمن + SVG)
-│   │   ├── dom.js              ← el() helper آمن من XSS
-│   │   ├── sections.js
-│   │   ├── insights.js
-│   │   └── charts.js           ← SVG donut + bars
-│   ├── export/                 ← TXT / CSV / JSON
-│   ├── i18n/                   ← ar.js / en.js / index.js
-│   ├── data/                   ← stopwords + sentiment-dict
-│   └── storage/local.js        ← localStorage
-├── tests/                      ← 95 اختبار Vitest
-└── .github/workflows/deploy.yml ← نشر تلقائي على Pages
+src/
+├── analysis/
+│   ├── ai-detection.js          ← كشف AI (9 إشارات)
+│   ├── algorithm-score.js       ← توافقية X
+│   ├── engagement-predictor.js  ← تنبؤ بـ15 إجراء
+│   ├── readability.js           ← مؤشر LIX المعدّل
+│   ├── tone-detector.js         ← 6 نبرات
+│   ├── single-tweet.js          ← orchestrator
+│   ├── sentiment.js / extractors.js / tokenize.js / stats.js
+│   └── index.js
+├── data/
+│   ├── ai-cliches.js            ← قاموس عبارات LLM
+│   ├── algorithm-weights.js     ← أوزان xai-org
+│   ├── bait-patterns.js         ← engagement-bait
+│   ├── sensitive-words.js       ← toxicity/spam
+│   ├── tone-patterns.js
+│   ├── sentiment-dict.js / stopwords.js
+├── optimizer/
+│   └── rewrite-suggestions.js   ← 3 variants
+├── render/
+│   ├── composer.js, tabs.js, panels.js, toast.js,
+│   │ history-panel.js, comparison.js, share-card.js, dom.js
+├── storage/
+│   ├── history.js, preferences.js, local.js
+├── i18n/
+│   ├── ar.js, en.js, index.js
+├── export/
+│   ├── txt.js, csv.js, json.js
+└── main.js                       ← entry point
 ```
 
-### الـ npm scripts
+### npm scripts
+
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | تشغيل dev server مع HMR |
-| `npm run build` | بناء الإنتاج إلى `dist/` |
-| `npm run preview` | معاينة `dist/` محلياً |
-| `npm test` | تشغيل 95 اختبار مرة واحدة |
-| `npm run test:watch` | اختبارات في وضع watch |
-| `npm run test:coverage` | تقرير تغطية الاختبارات |
-| `npm run lint` | فحص ESLint |
-| `npm run format` | تنسيق الكود بـ Prettier |
+| `npm run dev` | Vite dev server (HMR) |
+| `npm run build` | بناء إنتاجي إلى `dist/` |
+| `npm run preview` | معاينة `dist/` |
+| `npm test` | 128 اختبار (vitest + jsdom) |
+| `npm run test:watch` | watch mode |
+| `npm run test:coverage` | تقرير تغطية |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier |
 
 ### النشر
-كل push على `main` يشغّل `.github/workflows/deploy.yml` الذي:
-1. ينفّذ الاختبارات (يمنع نشر كود مكسور)
-2. يبني المشروع بـ Vite
-3. ينشر `dist/` تلقائياً على GitHub Pages
+
+كل push على `main` يُفعّل `.github/workflows/deploy.yml` الذي:
+1. يشغّل الاختبارات
+2. يبني عبر Vite
+3. ينشر `dist/` إلى GitHub Pages تلقائياً
+
+### الاختبارات (128 ✅)
+
+| ملف | محتوى |
+|---|---|
+| `ai-detection.test.js` | الإشارات + النتيجة الكلية |
+| `algorithm-score.test.js` | الـ15 احتمالاً + التوصيات + الـ features |
+| `single-tweet.test.js` | المنطق الكامل لتغريدة |
+| `optimizer.test.js` | إعادات الصياغة |
+| `history.test.js` | dedup + cap 20 + persistence |
+| `integration.test.js` | 11 سيناريو نهاية-إلى-نهاية في الـ DOM |
+| `exports.test.js` | TXT/CSV/JSON v3 |
+| + `dom`, `extractors`, `sentiment`, `stats`, `storage`, `tokenize` |
 
 ---
 
-## 📄 الترخيص
+## 🛠️ التقنيات
+
+### Runtime (ما يصل للمتصفح)
+
+- HTML5 semantic + ARIA
+- CSS3 (Grid + Flexbox + clamp + custom properties)
+- Vanilla JavaScript ES Modules (لا runtime dependencies)
+- SVG + Canvas 2D
+
+### Dev tooling (لا يُشحَن للمتصفح)
+
+- **Vite 5** — dev server + production build
+- **Vitest 2 + jsdom 25** — 128 اختبار
+- **ESLint 9** + **Prettier 3**
+
+### الحجم
 
 ```
-MIT License
-
-Copyright (c) 2024 [Your Name]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+dist/index.html                  3.07 kB │ gzip:  1.10 kB
+dist/assets/index-xxx.css       17.07 kB │ gzip:  3.81 kB
+dist/assets/index-xxx.js        62.22 kB │ gzip: 22.45 kB
 ```
+
+**~27 KB gzipped** يصل للمتصفح. صفر runtime dependencies.
 
 ---
 
-## 🤝 المساهمة
+## 🌍 المتصفحات المدعومة
 
-نرحب بمساهماتكم لتطوير الأداة! 
-
-### كيفية المساهمة
-1. **Fork** المشروع
-2. أنشئ **Branch** للميزة الجديدة (`git checkout -b feature/AmazingFeature`)
-3. **Commit** التغييرات (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** للـ Branch (`git push origin feature/AmazingFeature`)
-5. افتح **Pull Request**
-
-### أفكار للمساهمة
-- [ ] إضافة لغات جديدة
-- [ ] تحسين خوارزمية تحليل المشاعر
-- [ ] إضافة رسوم بيانية Chart.js
-- [ ] تحليل الوقت والتاريخ
-- [ ] تصدير PDF
-- [ ] Dark/Light Mode Toggle
-- [ ] حفظ التاريخ في LocalStorage
-- [ ] مقارنة بين عدة تحليلات
+✅ Chrome / Firefox / Edge / Safari / Opera (إصدارات 2020+)
+✅ جوال (iOS Safari, Chrome Android)
+✅ يتطلب JavaScript مُفعَّل
 
 ---
 
 ## 🔄 سجل التحديثات
 
-### الإصدار 1.0.0 (ديسمبر 2024)
-- ✅ الإطلاق الأول
-- ✅ 6 إحصائيات أساسية
-- ✅ 8 تحليلات متقدمة
-- ✅ تحليل المشاعر
-- ✅ رؤى ذكية
-- ✅ تحليل الهاشتاقات والإشارات
-- ✅ سحابة الكلمات
-- ✅ تحليل الإيموجي
-- ✅ توزيع الطول
-- ✅ تصدير TXT
-- ✅ تصميم متجاوب
-- ✅ واجهة Claude AI Style
+### v3.0.0 (2026-05) — الإصدار الحالي
+- 🤖 إضافة كشف الذكاء الاصطناعي (9 إشارات)
+- 🐦 إضافة توافقية خوارزمية xai-org (15 احتمال تفاعل)
+- 🪄 إضافة مُحسِّن إعادة الصياغة
+- ⚔️ إضافة مقارنة A/B
+- 🗂️ إضافة سجل التحليلات
+- 🖼️ إضافة بطاقة مشاركة PNG
+- 🎨 إعادة تصميم كاملة (tabs, gauges, toast, theme toggle)
+- 🔄 التحوّل من تحليل مجموعة تغريدات إلى تغريدة واحدة عميقة
+- ✅ 128 اختبار (كان 95)
+
+### v2.0.0 — الإصدار السابق
+- إعادة هيكلة معمارية (ES Modules + Vite + Vitest)
+- اختبارات وحدة (95)
+- i18n (ar/en)
+- SVG charts
+- localStorage
+
+### v1.0.0 (ديسمبر 2024)
+- إصدار أولي
+- 6 إحصاءات + تحليل مشاعر + سحابة كلمات + تصدير TXT
 
 ---
 
-## 🌟 الميزات المستقبلية
+## 🌟 الميزات المستقبلية المقترحة
 
-### قيد التطوير
-- [ ] تحليل التواريخ والأوقات
-- [ ] رسوم بيانية تفاعلية
-- [ ] مقارنة تحليلات متعددة
-- [ ] تصدير PDF/Excel
-- [ ] حفظ في LocalStorage
-- [ ] وضع الليل/النهار
-- [ ] اختصارات لوحة المفاتيح
-- [ ] استيراد من ملفات
+- [ ] PWA (تثبيت + دعم offline)
+- [ ] تحليل صور التغريدات (alt-text + OCR)
+- [ ] دعم منصات أخرى (LinkedIn, Bluesky)
+- [ ] استيراد ملفات archives من X مباشرة
+- [ ] Heatmap تلوين الكلمات داخل التغريدة بحسب تأثيرها
+- [ ] اقتراح هاشتاقات ذكي من قاموس مدمج
 
-### خطط طويلة المدى
-- [ ] تطبيق Progressive Web App (PWA)
-- [ ] تحليل الصور في التغريدات
-- [ ] AI-Powered Insights
-- [ ] دعم منصات أخرى (Instagram, LinkedIn)
-- [ ] API للمطورين
-- [ ] تطبيق سطح المكتب (Electron)
+---
+
+## 🤝 المساهمة
+
+نرحّب بمساهماتك! للبدء:
+
+1. **Fork** المشروع
+2. أنشئ branch جديداً (`git checkout -b feature/AmazingFeature`)
+3. **Commit** التغييرات (`git commit -m 'Add AmazingFeature'`)
+4. شغّل الاختبارات (`npm test`) و lint (`npm run lint`)
+5. **Push** و افتح **Pull Request**
 
 ---
 
 ## 👨‍💻 المطور
 
-**تطوير: [عبدالكريم العبود]**
+**عبدالكريم العبود · ABDULKARIM ALOBUD**
 
-📧 البريد الإلكتروني: [abo.saleh.g@gmail.com](mailto:abo.saleh.g@gmail.com)  
-🌐 الموقع: [هنا](https://abosalehg-ui.github.io/twitter-analyzer)  
-💻 GitHub: [abosalehg-ui](https://github.com/abosalehg-ui)
-
----
-
-## 📞 الدعم والمساعدة
-
-### طرق التواصل
-- 📧 **Email**: abo.saleh.g@gmail.com
-- 💬 **Issues**: [GitHub Issues](https://github.com/abosalehg-ui/twitter-analytics/issues)
-- 📖 **Documentation**: [Wiki](https://github.com/abosalehg-ui/twitter-analytics/wiki)
-- 💡 **Discussions**: [GitHub Discussions](https://github.com/abosalehg-ui/twitter-analytics/discussions)
-
-### الإبلاغ عن مشكلة
-```markdown
-**وصف المشكلة:**
-[وصف واضح للمشكلة]
-
-**خطوات إعادة الإنتاج:**
-1. اذهب إلى '...'
-2. انقر على '...'
-3. الخطأ يظهر
-
-**السلوك المتوقع:**
-[ما كان يجب أن يحدث]
-
-**لقطات الشاشة:**
-[إن وُجدت]
-
-**المتصفح:**
-- OS: [مثال: Windows 10]
-- Browser: [مثال: Chrome 120]
-```
+- 📧 [abo.saleh.g@gmail.com](mailto:abo.saleh.g@gmail.com)
+- 💻 [github.com/abosalehg-ui](https://github.com/abosalehg-ui)
+- 🌐 [Live App](https://abosalehg-ui.github.io/twitter-analyzer)
 
 ---
 
-## 📊 إحصائيات المشروع
+## 📄 الترخيص
 
-![GitHub Stars](https://img.shields.io/github/stars/yourusername/twitter-analytics?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/yourusername/twitter-analytics?style=social)
-![GitHub Issues](https://img.shields.io/github/issues/yourusername/twitter-analytics)
-![GitHub Pull Requests](https://img.shields.io/github/issues-pr/yourusername/twitter-analytics)
+**MIT License** — حر للاستخدام والتعديل والتوزيع.
 
 ---
 
 <a name="english"></a>
-# English Documentation
 
-## 📋 Overview
+## 📋 Overview (English)
 
-**Twitter Analytics Tool** is a comprehensive web application that provides deep analysis of tweets without requiring Twitter API access. The tool operates locally in your browser and fully respects your privacy - no data is sent to external servers. Designed with a modern interface inspired by Claude AI with responsive design that works on all devices.
+**Smart Tweet Analyzer v3.0** is a web app that diagnoses **a single tweet** across **8 analytical dimensions** without any server or external API. All processing happens locally in your browser.
 
----
+### What's new in v3.0?
 
-## ✨ Key Features
-
-### 📊 Comprehensive Statistics
-- **Tweet Count**: Automatic count of analyzed tweets
-- **Total Words**: Complete calculation of all used words
-- **Average Length**: Average word count per tweet
-- **Hashtag Count**: Count of unique hashtags
-- **Mention Count**: Number of mentioned accounts (@)
-- **Emoji Count**: Count of emojis used
-
-### 🎭 Smart Sentiment Analysis
-- **Automatic Classification**: Positive / Neutral / Negative
-- **Visual Display**: Interactive bar showing percentages
-- **Smart Algorithm**: Analysis based on words and emojis
-- **High Accuracy**: Reliable sentiment detection
-
-### 💡 Personalized Smart Insights
-- **Writing Style Analysis**: Assessment of tweeting style (short/long)
-- **Hashtag Usage**: Evaluation of hashtag effectiveness
-- **Social Interaction**: Mention pattern analysis
-- **Automatic Tips**: Suggestions for content improvement
-- **Positivity Rating**: Measure of positive energy in content
-
-### 🏷️ Hashtag Analysis
-- **Smart Ranking**: Top 10 most used hashtags
-- **Frequency Counter**: Number of uses per hashtag
-- **Organized Display**: Clear colored cards
-- **Automatic Sorting**: Ranked by popularity
-
-### 👤 Mention Analysis (@)
-- **Automatic Extraction**: All mentions in tweets
-- **Most Mentioned**: Accounts ranked by frequency
-- **Sorted Display**: Top 10 mentioned accounts
-- **Accurate Statistics**: Number of mentions per account
-
-### 😊 Emoji Analysis
-- **Comprehensive Extraction**: All emojis
-- **Visual Display**: Large and clear emojis
-- **Popularity Ranking**: Most used first
-- **Per-Symbol Counter**: Usage count for each
-
-### ☁️ Word Cloud
-- **25 Words**: Most frequently repeated words
-- **Dynamic Size**: Word size reflects frequency
-- **Smart Filtering**: Exclude common words (in, from, on...)
-- **Bilingual Support**: Arabic and English
-
-### 📊 Tweet Length Distribution
-- **Interactive Chart**: Clear visual classification
-- **Three Categories**: Short (<50) / Medium (50-150) / Long (>150)
-- **Percentages**: Distribution shown in percentages
-- **Distinctive Colors**: Visual distinction for each category
-
-### 🌟 Longest and Shortest Tweets
-- **Text Display**: Complete tweets
-- **Character Count**: Precise measurement
-- **Visual Distinction**: Colored frames
-- **Comprehensive Information**: Details for each tweet
-
-### 💾 Data Export (3 formats)
-- **TXT 📥**: Comprehensive text report, easy to read
-- **CSV 📊**: Spreadsheet-ready with RFC 4180 escaping and UTF-8 BOM (Excel/Arabic compatible)
-- **JSON 🗂️**: Structured payload with `generatedAt` + `version` for automation
-- **Timestamp**: Date and time recorded in every file
-
-### 💼 Auto-save
-- **localStorage**: debounced save of your textarea content while typing
-- **Auto-restore**: last input is restored when you reopen the tool
-- **Clear button 🗑️**: wipes input, results, and storage in one click
-
-### 📈 Interactive Charts (SVG)
-- **Donut chart**: sentiment distribution as a real SVG donut
-- **Bar chart**: SVG length-distribution chart with gradient fill
-- **Responsive**: scales without losing quality
+- 🤖 **AI detection**: 9 weighted heuristic signals to estimate the likelihood that the text was written by an LLM
+- 🐦 **X algorithm fit**: a prediction engine modeled after [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) that scores compatibility across 15 engagement actions
+- 🪄 **Smart optimizer**: 3 rewrite variants (shorter / question / positive) with a predicted new score for each
+- ⚔️ **A/B comparison** between two tweets
+- 🗂️ **Analysis history** (last 20)
+- 🖼️ **PNG share card** with all results
 
 ---
 
-## 🚀 How to Use
+## ✨ Features
 
-### 1️⃣ Input Tweets
+### 🤖 AI Detection
+
+A 0-100 score with a confidence band (low/medium/high based on text length). Built from 9 weighted signals:
+
+| Signal | Weight | Idea |
+|---|---|---|
+| Burstiness | 18% | LLMs produce uniform sentence lengths; humans vary |
+| Lexical diversity (TTR) | 14% | Unusually high TTR on short text is suspicious |
+| Formality | 12% | Ratio of long words (≥7 chars) |
+| Punctuation polish | 12% | em-dash, smart quotes, semicolons |
+| LLM cliché phrases | 15% | AR/EN dictionary (~80 phrases: "delve", "furthermore", "في الواقع", "تجدر الإشارة"...) |
+| Emoji density | 8% | Zero emojis on a long tweet is suspicious |
+| Slang/typo absence | 8% | "lol", "ngl", "يلا" are strong human signals |
+| Hashtag pattern | 7% | Strictly clustered at the end = LLM |
+| Sentence starters | 6% | Repeated "In/As/While" openings |
+
+> ⚠️ **Disclaimer**: This is a heuristic estimate, not a definitive judgment. Even commercial tools err on short texts like tweets.
+
+### 🐦 X Algorithm Fit
+
+Modeled after the new Grok-based transformer from xAI. The algorithm predicts probabilities across **15 engagement actions** and combines them as:
+
 ```
-1. Open the tool in browser
-2. Paste your tweets in the text box
-3. Put each tweet on a separate line
-4. You can include hashtags, mentions, and emojis
+Final Score = Σ (weight_i × P(action_i))
 ```
 
-### 2️⃣ Analysis
-```
-1. Click "🔍 Comprehensive Analysis" button
-2. Wait a few seconds
-3. View comprehensive results
-4. Explore all statistics and insights
-```
+| Positive actions | Negative actions |
+|---|---|
+| like, reply, repost, share | not_interested, hide |
+| click, profile_click | block_author, mute_author |
+| video_view, photo_expand | report |
+| dwell, follow | |
 
-### 3️⃣ Export
-```
-1. After analysis, pick a format:
-   • TXT 📥 — readable text report
-   • CSV 📊 — spreadsheet for Excel / Sheets
-   • JSON 🗂️ — structured data for automation
-2. File downloads automatically
-3. Share or save results
-```
+**Output**: 0-100 score + predicted reach bucket (low/medium/good/excellent) + actionable recommendations.
+
+**What helps / hurts** (heuristic):
+- ✅ Sweet-spot length (70-150 chars) → bonus
+- ✅ A question triggers replies (high weight)
+- ✅ Positive tone + moderate emojis
+- ❌ External links → penalty
+- ❌ Engagement bait ("RT to win", "like and follow") → heavy penalty
+- ❌ Toxic tone (triggers block/mute/report)
+- ❌ Excessive hashtags / mentions
+
+### 🪄 Tweet Optimizer
+
+Generates **3 rewrite variants** with predicted new scores:
+
+1. **Shorter**: remove filler, tighten to the sweet spot
+2. **Question**: append "what do you think?" to drive replies
+3. **Positive**: replace negative wording + add a positive marker
+
+### 📊 The 8 Analysis Tabs
+
+| Tab | Content |
+|---|---|
+| **Overview** | 3 gauges (AI / Algo / Readability) + quick stats |
+| **AI Detection** | Score + 9 signals + matched phrases |
+| **X Fit** | Score + top 5 positives + worst 3 negatives + recommendations |
+| **Predicted Reach** | All 15 probabilities with relative bars |
+| **Optimizer** | Rewrite suggestion cards |
+| **Weaknesses** | 10-item pre-publish checklist |
+| **Tone** | Detected tone + best posting time + readability metrics |
+| **Details** | Keywords + hashtags + mentions + emojis |
+
+### 🎚️ Smart Composer
+
+- **Circular counter** (green in sweet-spot, yellow at 240, red at 280+)
+- **Progress bar** with highlighted 70-150 zone
+- **Keyboard shortcuts**: `Cmd/Ctrl+Enter` to analyze · `Esc` to clear
+- **Auto-save** draft to localStorage
+- **280-char limit** with graceful warning
+
+### ⚔️ A/B Comparison
+
+After analyzing a tweet, click "⚔️ Compare with another tweet" → opens a second composer → displays a side-by-side table showing which is better per metric.
+
+### 🗂️ History + 🖼️ Share Card
+
+- **History**: last 20 analyses in localStorage with open/compare/delete actions
+- **PNG card**: canvas-based 1200×630 export, ideal for social sharing
+
+### 🌐 Bilingual + Theme
+
+- **AR/EN** switches `dir="rtl"` ↔ `dir="ltr"` and updates all strings live
+- **Dark/Light** togglable with preference persistence
+- Full **ARIA** (tablist/tab/tabpanel) + `prefers-reduced-motion`
+
+### 💾 Export
+
+| Format | Content |
+|---|---|
+| **TXT 📥** | Readable text report |
+| **CSV 📊** | RFC 4180 + UTF-8 BOM (Excel/Arabic) + all 15 probabilities |
+| **JSON 🗂️** | Structured v3 schema for automation |
+| **PNG 🖼️** | Visual share card |
 
 ---
 
-## 🎯 Use Cases
+## 🔒 Privacy & Security
 
-### 📱 For Individuals and Influencers
-- **Style Analysis**: Understand your writing pattern
-- **Content Improvement**: Insights to develop tweets
-- **Positivity Measurement**: Know how positive your content is
-- **Hashtag Strategy**: Know most used hashtags
-
-### 📊 For Marketers and Content Managers
-- **Campaign Analysis**: Understand content performance
-- **Keyword Strategy**: Know most used words
-- **Sentiment Analysis**: Measure reactions
-- **Comprehensive Reports**: Export data for presentation
-
-### ✍️ For Writers and Journalists
-- **Language Analysis**: Understand linguistic style
-- **Diversity Measurement**: Know vocabulary richness
-- **Accurate Statistics**: Data for research
-- **Content Documentation**: Save and analyze tweets
-
-### 🎓 For Researchers and Academics
-- **Text Analysis**: Study writing patterns
-- **Sentiment Analysis**: Scientific research
-- **Linguistic Statistics**: Accurate data
-- **Case Studies**: Real examples
-
-### 🏢 For Companies and Organizations
-- **Brand Analysis**: Understand brand voice
-- **Performance Measurement**: Track content
-- **Strategy Improvement**: Actionable insights
-- **Management Reports**: Documented data
+- ✅ **Fully client-side**: no server, no API, no tracking, no cookies
+- ✅ **localStorage stays local**: draft, history, and preferences live on your device only
+- ✅ **XSS-hardened**: all user input rendered via `textContent` — no `innerHTML`
+- ✅ **128 tests** including an explicit XSS guard
+- ✅ **Fully open source** under MIT license
 
 ---
 
-## 💻 Technical Requirements
+## 🚀 Usage
 
-### Supported Browsers
-- ✅ **Google Chrome** (Recommended)
-- ✅ **Mozilla Firefox**
-- ✅ **Microsoft Edge**
-- ✅ **Safari**
-- ✅ **Opera**
-- ✅ Any modern browser supporting ES6
+### End users
+🌐 Open: **https://abosalehg-ui.github.io/twitter-analyzer**
 
-### Minimum Specifications
-- Modern browser (2020 or newer)
-- JavaScript enabled
-- Screen resolution 320px × 568px or higher
-- Internet connection (for page load only)
+### Developers
 
-### Performance
-- **Analysis Speed**: Instant (< 1 second for 100 tweets)
-- **Memory**: Light resource usage
-- **Compatibility**: Works on all devices
-- **Size**: Single lightweight file
-
----
-
-## 🔒 Privacy and Security
-
-### ✅ Privacy Guarantees
-- **Local Processing**: All operations in your browser
-- **No Servers**: No data sent to any server
-- **No Tracking**: No tracking codes
-- **No Cookies**: No cookie usage
-- **Local-only storage**: input persisted to localStorage on your device only; clearable via the 🗑️ Clear button
-
-### 🛡️ Security
-- **Transparent Code**: Open source for review
-- **No API**: No external connections
-- **XSS-hardened**: all user data rendered via `textContent`; no `innerHTML` for user input
-- **Completely Safe**: Suitable for sensitive data
-- **Tested**: 95 automated tests including an explicit XSS guard
-
----
-
-## 🛠️ Technologies Used
-
-### Frontend (Runtime)
-```
-├── HTML5: semantic markup + ARIA
-├── CSS3: layout and styling
-│   ├── Flexbox + Grid
-│   ├── Clamp(): fluid sizes
-│   ├── prefers-reduced-motion: a11y
-│   └── Animations
-├── JavaScript (Vanilla ES Modules)
-│   ├── Safe DOM (no innerHTML for user data)
-│   ├── RegEx + Unicode word boundaries
-│   ├── Map / Set: counting & fast lookup
-│   ├── Blob API: file export
-│   ├── localStorage: input persistence
-│   └── i18n: ar.js / en.js
-└── SVG: interactive charts (donut + bars)
-```
-
-### Dev tooling (not shipped to the browser)
-```
-├── Vite — dev server + production build
-├── Vitest + jsdom — 95 automated tests
-├── ESLint — linting
-└── Prettier — code formatting
-```
-
-### No runtime dependencies
-- ✅ No jQuery / React / Bootstrap
-- ✅ Only HTML/CSS/JS ship to the browser (~22KB JS gzipped)
-
----
-
-## 🚀 Installation and Usage
-
-### Method 1: Use directly (end users)
-Open: https://abosalehg-ui.github.io/twitter-analyzer/
-
-### Method 2: Run locally (developers)
 ```bash
 git clone https://github.com/abosalehg-ui/twitter-analyzer.git
 cd twitter-analyzer
 npm install
-npm run dev        # http://localhost:5173
+npm run dev           # http://localhost:5173
 ```
 
-### Method 3: Production build
+### Production
+
 ```bash
-npm run build      # outputs to dist/
-npm run preview    # preview dist/ locally
+npm run build         # → dist/
+npm run preview       # preview dist/
 ```
 
 ---
 
 ## 🧑‍💻 For Developers
 
-### Project structure
-```
-twitter-analyzer/
-├── index.html                  ← markup only + <script type="module">
-├── styles/main.css             ← extracted CSS
-├── src/
-│   ├── main.js                 ← entry point
-│   ├── analysis/               ← pure analysis logic (testable)
-│   ├── render/                 ← DOM + SVG rendering (XSS-safe)
-│   ├── export/                 ← TXT / CSV / JSON
-│   ├── i18n/                   ← ar.js / en.js / index.js
-│   ├── data/                   ← stopwords + sentiment-dict
-│   └── storage/local.js        ← localStorage
-├── tests/                      ← 95 Vitest tests
-└── .github/workflows/deploy.yml ← auto-deploy to Pages
-```
+See the [Arabic section](#arabic) above for the full file tree, npm scripts, deployment workflow, and test inventory — they are structurally identical regardless of locale.
 
-### npm scripts
+### Quick reference
+
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | dev server with HMR |
+| `npm run dev` | Vite dev server with HMR |
 | `npm run build` | production build to `dist/` |
-| `npm run preview` | preview `dist/` locally |
-| `npm test` | run 95 tests once |
-| `npm run test:watch` | tests in watch mode |
+| `npm run preview` | preview `dist/` |
+| `npm test` | 128 tests (vitest + jsdom) |
+| `npm run test:watch` | watch mode |
 | `npm run test:coverage` | coverage report |
-| `npm run lint` | ESLint check |
-| `npm run format` | Prettier formatting |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier |
 
-### Deployment
-Every push to `main` triggers `.github/workflows/deploy.yml`, which:
-1. Runs the test suite (prevents shipping broken code)
-2. Builds with Vite
-3. Deploys `dist/` to GitHub Pages
+### Bundle size
+
+```
+dist/index.html                  3.07 kB │ gzip:  1.10 kB
+dist/assets/index-xxx.css       17.07 kB │ gzip:  3.81 kB
+dist/assets/index-xxx.js        62.22 kB │ gzip: 22.45 kB
+```
+
+**~27 KB gzipped** reaches the browser. Zero runtime dependencies.
+
+---
+
+## 🛠️ Tech Stack
+
+**Runtime** (ships to browser): HTML5 + ARIA, CSS3 (Grid/Flexbox/clamp/custom properties), vanilla ES modules, SVG + Canvas 2D.
+
+**Dev tooling** (build-only): Vite 5, Vitest 2 + jsdom 25, ESLint 9, Prettier 3.
+
+---
+
+## 🌍 Browser Support
+
+✅ Chrome / Firefox / Edge / Safari / Opera (2020+)
+✅ Mobile (iOS Safari, Chrome Android)
+✅ Requires JavaScript enabled
+
+---
+
+## 🔄 Changelog
+
+### v3.0.0 (2026-05) — current
+- 🤖 Added AI detection (9 signals)
+- 🐦 Added xai-org algorithm fit (15 actions)
+- 🪄 Added rewrite optimizer
+- ⚔️ Added A/B comparison
+- 🗂️ Added analysis history
+- 🖼️ Added PNG share card
+- 🎨 Full UI redesign (tabs, gauges, toasts, theme toggle)
+- 🔄 Pivoted from multi-tweet aggregation to single-tweet deep analysis
+- ✅ 128 tests (up from 95)
+
+### v2.0.0 — previous
+- Architectural rewrite (ES Modules + Vite + Vitest)
+- Unit tests (95)
+- i18n (ar/en)
+- SVG charts
+- localStorage
+
+### v1.0.0 (December 2024)
+- Initial release
+- 6 stats + sentiment + word cloud + TXT export
+
+---
+
+## 🌟 Roadmap
+
+- [ ] PWA (installable + offline support)
+- [ ] Tweet image analysis (alt-text + OCR)
+- [ ] Multi-platform support (LinkedIn, Bluesky)
+- [ ] Direct X archive import
+- [ ] Word-level impact heatmap
+- [ ] Smart hashtag suggester
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! To get started:
+
+1. **Fork** the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. **Commit** your changes (`git commit -m 'Add AmazingFeature'`)
+4. Run tests (`npm test`) and lint (`npm run lint`)
+5. **Push** and open a **Pull Request**
+
+---
+
+## 👨‍💻 Developer
+
+**ABDULKARIM ALOBUD · عبدالكريم العبود**
+
+- 📧 [abo.saleh.g@gmail.com](mailto:abo.saleh.g@gmail.com)
+- 💻 [github.com/abosalehg-ui](https://github.com/abosalehg-ui)
+- 🌐 [Live App](https://abosalehg-ui.github.io/twitter-analyzer)
 
 ---
 
 ## 📄 License
 
-```
-MIT License
+**MIT License** — free to use, modify, and distribute.
 
-Copyright (c) 2024 [Your Name]
+```
+Copyright (c) 2024-2026 ABDULKARIM ALOBUD
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -966,111 +623,12 @@ SOFTWARE.
 
 ---
 
-## 🤝 Contributing
-
-We welcome your contributions to improve the tool!
-
-### How to Contribute
-1. **Fork** the project
-2. Create a **Branch** for new feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** changes (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** to Branch (`git push origin feature/AmazingFeature`)
-5. Open a **Pull Request**
-
-### Contribution Ideas
-- [ ] Add new languages
-- [ ] Improve sentiment analysis algorithm
-- [ ] Add Chart.js visualizations
-- [ ] Time and date analysis
-- [ ] PDF export
-- [ ] Dark/Light Mode Toggle
-- [ ] Save history in LocalStorage
-- [ ] Compare multiple analyses
-
----
-
-## 🔄 Changelog
-
-### Version 1.0.0 (December 2024)
-- ✅ Initial release
-- ✅ 6 basic statistics
-- ✅ 8 advanced analyses
-- ✅ Sentiment analysis
-- ✅ Smart insights
-- ✅ Hashtag and mention analysis
-- ✅ Word cloud
-- ✅ Emoji analysis
-- ✅ Length distribution
-- ✅ TXT export
-- ✅ Responsive design
-- ✅ Claude AI Style interface
-
----
-
-## 🌟 Future Features
-
-### In Development
-- [ ] Date and time analysis
-- [ ] Interactive charts
-- [ ] Compare multiple analyses
-- [ ] PDF/Excel export
-- [ ] LocalStorage saving
-- [ ] Day/Night mode
-- [ ] Keyboard shortcuts
-- [ ] Import from files
-
-### Long-term Plans
-- [ ] Progressive Web App (PWA)
-- [ ] Image analysis in tweets
-- [ ] AI-Powered Insights
-- [ ] Support other platforms (Instagram, LinkedIn)
-- [ ] Developer API
-- [ ] Desktop app (Electron)
-
----
-
-## 👨‍💻 Developer
-
-**Developed by: [ABDULKARIM ALOBUD]**
-
-📧 Email: [abo.saleh.g@gmail.com](mailto:abo.saleh.g@gmail.com)  
-🌐 Website: [In here](https://abosalehg-ui.github.io/twitter-analyzer)  
-💻 GitHub: [abosalehg-ui](https://github.com/abosalehg-ui)
-
----
-
-## 📞 Support and Help
-
-### Contact Methods
-- 📧 **Email**: abo.saleh.g@gmail.com
-- 💬 **Issues**: [GitHub Issues](https://github.com/abosalehg-ui/twitter-analytics/issues)
-- 📖 **Documentation**: [Wiki](https://github.com/abosalehg-ui/twitter-analytics/wiki)
-- 💡 **Discussions**: [GitHub Discussions](https://github.com/abosalehg-ui/twitter-analytics/discussions)
-
----
-
 <div align="center">
 
-### 🌐 Links
+**Smart Tweet Analyzer · محلّل التغريدات الذكي** — Intelligence in every tweet
 
-[🏠 Homepage](https://abosalehg-ui.github.io/twitter-analyzer) | 
-[📖 Documentation](https://github.com/abosalehg-ui/twitter-analytics-tool/wiki) | 
-[🐛 Report Bug](https://github.com/abosalehg-ui/twitter-analytics-tool/issues) | 
-[✨ Request Feature](https://github.com/abosalehg-ui/twitter-analytics-tool/issues)
-
----
-
-**Twitter Analytics Tool** - Intelligence in Every Tweet
-
-Made with ❤️ by [ABDULKARIM]
+Made with ❤️ by [ABDULKARIM](https://github.com/abosalehg-ui)
 
 ⭐ Star us on GitHub if you find this useful!
-
----
-
-![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
-![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
 
 </div>
