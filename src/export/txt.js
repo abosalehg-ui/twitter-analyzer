@@ -7,75 +7,51 @@ import { t, getLocale } from '../i18n/index.js';
  */
 
 /**
- * Build a plain-text report from analysis results.
+ * Build a plain-text report for a single-tweet analysis.
  * @param {AnalysisResult} data
  * @returns {string}
  */
 export function buildReport(data) {
-  const topN = (counts, n) =>
-    Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, n);
-
-  const formatLine = ([key, count]) => `- ${key}: ${count} ${t('report.times')}`;
-
-  const hashtagsLines = topN(data.hashtags, 10).map(formatLine).join('\n') || `- ${t('report.noMentions').replace('- ', '')}`;
-  const mentionsLines =
-    Object.keys(data.mentions).length > 0
-      ? topN(data.mentions, 10).map(formatLine).join('\n')
-      : t('report.noMentions');
-  const emojisLines =
-    Object.keys(data.emojis).length > 0
-      ? topN(data.emojis, 10).map(formatLine).join('\n')
-      : t('report.noEmojis');
-  const wordsLines = topN(data.words, 15).map(formatLine).join('\n');
-
   const locale = getLocale() === 'ar' ? 'ar-SA' : 'en-US';
+  const signals = data.ai.signals
+    .map((s) => `  - ${t('ai.signal.' + s.key)}: ${Math.round(s.raw * 100)}/100`)
+    .join('\n');
+  const positives = data.algorithm.positives
+    .slice(0, 5)
+    .map((c) => `  - ${t('action.' + c.action)}: ${(c.probability * 100).toFixed(0)}%`)
+    .join('\n');
+  const negatives = data.algorithm.negatives
+    .slice(0, 5)
+    .map((c) => `  - ${t('action.' + c.action)}: ${(c.probability * 100).toFixed(0)}%`)
+    .join('\n');
+  const recs = data.algorithm.recommendations.map((k) => `  - ${t(k)}`).join('\n');
 
-  return `${t('report.title')}
+  return `${t('app.title')}
 ========================
 
-${t('report.generalStats')}
-- ${t('report.totalTweets')}: ${data.totalTweets}
-- ${t('report.totalWords')}: ${data.totalWords}
-- ${t('report.avgLength')}: ${data.avgLength}
-- ${t('report.hashtagCount')}: ${Object.keys(data.hashtags).length}
-- ${t('report.mentionCount')}: ${Object.keys(data.mentions).length}
-- ${t('report.emojiCount')}: ${Object.keys(data.emojis).length}
+${t('composer.label')}
+${data.text}
 
-${t('report.sentiment')}
-- ${t('sentiment.positive')}: ${data.sentimentScores.positive} ${t('report.tweets')}
-- ${t('sentiment.neutral')}: ${data.sentimentScores.neutral} ${t('report.tweets')}
-- ${t('sentiment.negative')}: ${data.sentimentScores.negative} ${t('report.tweets')}
+${t('overview.length')}: ${data.length} ${t('overview.chars')} | ${t('overview.words')}: ${data.wordCount}
+${t('overview.hashtags')}: ${data.hashtags.length} | ${t('overview.mentions')}: ${data.mentions.length} | ${t('overview.emojis')}: ${data.emojis.length}
+${t('overview.sentiment')}: ${t('sentiment.' + data.sentiment.label)}
+${t('overview.tone')}: ${t('tone.' + data.tone.primary)}
+${t('overview.readability')}: ${t('read.level.' + data.readability.level)} (${data.readability.score}/100)
 
-${t('report.topHashtags')}
-${hashtagsLines}
+${t('ai.title')}: ${data.ai.score}/100 — ${t('ai.confidence')}: ${t('ai.confidence.' + data.ai.confidence)}
+${signals}
 
-${t('report.topMentions')}
-${mentionsLines}
+${t('algo.title')}: ${data.algorithm.score}/100 — ${t('algo.reach')}: ${t('algo.reach.' + data.algorithm.reach)}
+${t('algo.positives')}:
+${positives}
+${t('algo.negatives')}:
+${negatives}
 
-${t('report.topEmojis')}
-${emojisLines}
-
-${t('report.topWords')}
-${wordsLines}
-
-${t('report.lengthDistribution')}
-- ${t('report.short')}: ${data.lengths.short} ${t('report.tweets')}
-- ${t('report.medium')}: ${data.lengths.medium} ${t('report.tweets')}
-- ${t('report.long')}: ${data.lengths.long} ${t('report.tweets')}
-
-${t('report.longestTweet')}
-${data.longestTweet.text}
-(${data.longestTweet.length} ${t('chars')})
-
-${t('report.shortestTweet')}
-${data.shortestTweet.text}
-(${data.shortestTweet.length} ${t('chars')})
+${t('algo.recommendations')}:
+${recs}
 
 ========================
-${t('report.footer')}
-${new Date().toLocaleString(locale)}
+${new Date(data.analyzedAt).toLocaleString(locale)}
 `;
 }
 
@@ -97,7 +73,6 @@ export function downloadText(filename, content) {
 }
 
 /**
- * Export the full analysis as a TXT file.
  * @param {AnalysisResult} data
  */
 export function exportTxt(data) {

@@ -4,13 +4,12 @@ import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-describe('end-to-end DOM integration', () => {
+describe('end-to-end DOM integration (single-tweet v3.0)', () => {
   /** @type {() => void} */
   let init;
 
   beforeAll(async () => {
-    // Set the test flag BEFORE importing main.js so it doesn't auto-init against an empty DOM.
-    // @ts-ignore
+    // @ts-ignore — prevent main.js auto-init against an empty DOM
     window.__TWITTER_ANALYZER_TEST__ = true;
     const mod = await import('../src/main.js');
     init = mod.init;
@@ -23,91 +22,129 @@ describe('end-to-end DOM integration', () => {
       /<!DOCTYPE[^>]*>|<html[^>]*>|<\/html>/g,
       ''
     );
-    init();
-  });
-
-  it('renders the page with all required DOM hooks', () => {
-    expect(document.getElementById('tweets')).not.toBeNull();
-    expect(document.getElementById('analyzeBtn')).not.toBeNull();
-    expect(document.getElementById('exportBtn')).not.toBeNull();
-    expect(document.getElementById('status')).not.toBeNull();
-    expect(document.getElementById('results')).not.toBeNull();
-  });
-
-  it('shows error status when analyze clicked with empty input', () => {
-    const btn = /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn'));
-    btn.click();
-    const status = /** @type {HTMLElement} */ (document.getElementById('status'));
-    expect(status.classList.contains('show')).toBe(true);
-    expect(status.classList.contains('error')).toBe(true);
-  });
-
-  it('does NOT execute injected HTML in tweet text (XSS guard)', () => {
-    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
-    textarea.value = '<img src=x onerror="window.__pwned=true">\nhello #world @bob 😊';
-    const btn = /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn'));
-    btn.click();
-
-    expect(document.getElementById('tweetCount')?.textContent).toBe('2');
-
-    const extremes = /** @type {HTMLElement} */ (document.getElementById('extremeTweets'));
-    expect(extremes.querySelector('img')).toBeNull();
-    expect(extremes.textContent).toContain('<img');
-
-    // @ts-ignore
-    expect(window.__pwned).toBeUndefined();
-  });
-
-  it('populates hashtags, mentions, emojis sections', () => {
-    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
-    textarea.value = 'hello #world @alice 😊\n#world again with @alice';
-    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
-
-    const hashtagList = /** @type {HTMLElement} */ (document.getElementById('hashtagList'));
-    const mentionList = /** @type {HTMLElement} */ (document.getElementById('mentionList'));
-    const emojiStats = /** @type {HTMLElement} */ (document.getElementById('emojiStats'));
-
-    expect(hashtagList.textContent).toContain('#world');
-    expect(hashtagList.textContent).toContain('2');
-    expect(mentionList.textContent).toContain('@alice');
-    expect(emojiStats.textContent).toContain('😊');
-  });
-
-  it('clear button wipes textarea, results, and storage', () => {
-    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
-    textarea.value = 'hello #world';
-    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
-
-    localStorage.setItem('twitter-analyzer:last-input', 'old content');
-
-    /** @type {HTMLButtonElement} */ (document.getElementById('clearBtn')).click();
-    expect(textarea.value).toBe('');
-    expect(document.getElementById('results')?.classList.contains('show')).toBe(false);
-    expect(localStorage.getItem('twitter-analyzer:last-input')).toBeNull();
-  });
-
-  it('renders SVG charts for length distribution and sentiment donut', () => {
-    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
-    textarea.value = 'short tweet 😊\n' + 'a'.repeat(60) + '\n' + 'b'.repeat(200) + ' terrible';
-    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
-
-    expect(document.querySelector('#lengthChart svg')).not.toBeNull();
-    expect(document.querySelector('#sentimentDonut svg')).not.toBeNull();
-  });
-
-  it('export buttons do not crash when analysis is present', () => {
-    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
-    textarea.value = 'hello #world @alice 😊';
-    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
-
-    // We don't trigger actual downloads; just verify the buttons exist and clicking
-    // them does not throw. URL.createObjectURL is mocked by jsdom-incompat shim:
+    // jsdom blob URL polyfill
     // @ts-ignore
     if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test';
     // @ts-ignore
     if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {};
+    init();
+  });
 
-    expect(() => /** @type {HTMLButtonElement} */ (document.getElementById('exportCsvBtn')).click()).not.toThrow();
-    expect(() => /** @type {HTMLButtonElement} */ (document.getElementById('exportJsonBtn')).click()).not.toThrow();
+  it('renders all required DOM hooks', () => {
+    expect(document.getElementById('analyzeBtn')).not.toBeNull();
+    expect(document.getElementById('clearBtn')).not.toBeNull();
+    expect(document.getElementById('results')).not.toBeNull();
+    expect(document.getElementById('tabsNav')).not.toBeNull();
+    expect(document.getElementById('tabsPanels')).not.toBeNull();
+    expect(document.getElementById('composerHost')).not.toBeNull();
+  });
+
+  it('shows toast error when analyze clicked with empty input', () => {
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+    const toasts = document.querySelector('.toast');
+    expect(toasts).not.toBeNull();
+    expect(toasts?.classList.contains('toast-error')).toBe(true);
+  });
+
+  it('does NOT execute injected HTML in tweet text (XSS guard)', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = '<img src=x onerror="window.__pwned=true">';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    expect(document.querySelector('#tabsPanels img')).toBeNull();
+    // @ts-ignore
+    expect(window.__pwned).toBeUndefined();
+  });
+
+  it('shows results section after analysis', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'Hello, just shipped a new feature today 🚀 What do you think about it?';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    expect(document.getElementById('results')?.classList.contains('show')).toBe(true);
+  });
+
+  it('renders all 8 tab panels after analysis', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'Just shipped a new feature today! What do you think? 🚀';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    const panels = document.querySelectorAll('.tab-panel');
+    expect(panels.length).toBe(8);
+  });
+
+  it('switches tabs on click', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'test tweet for tab switching today';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    const aiTab = document.querySelector('.tab-btn[data-tab="ai"]');
+    /** @type {HTMLElement} */ (aiTab).click();
+    expect(aiTab?.classList.contains('active')).toBe(true);
+    const aiPanel = document.querySelector('.tab-panel[data-tab="ai"]');
+    expect(aiPanel?.hasAttribute('hidden')).toBe(false);
+  });
+
+  it('clear button wipes textarea and hides results', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'something';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    /** @type {HTMLButtonElement} */ (document.getElementById('clearBtn')).click();
+    expect(textarea.value).toBe('');
+    expect(document.getElementById('results')?.classList.contains('show')).toBe(false);
+  });
+
+  it('export buttons do not throw when analysis is present', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'hello #world @alice 😊';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    expect(() =>
+      /** @type {HTMLButtonElement} */ (document.getElementById('exportTxtBtn')).click()
+    ).not.toThrow();
+    expect(() =>
+      /** @type {HTMLButtonElement} */ (document.getElementById('exportCsvBtn')).click()
+    ).not.toThrow();
+    expect(() =>
+      /** @type {HTMLButtonElement} */ (document.getElementById('exportJsonBtn')).click()
+    ).not.toThrow();
+  });
+
+  it('toggles compare composer on compare button click', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'first tweet for compare test';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+    /** @type {HTMLButtonElement} */ (document.getElementById('compareBtn')).click();
+
+    expect(document.getElementById('compareHost')?.hidden).toBe(false);
+    expect(document.getElementById('tweetCompare')).not.toBeNull();
+  });
+
+  it('save-to-history persists an entry to localStorage', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'memorable tweet to save';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+    /** @type {HTMLButtonElement} */ (document.getElementById('saveHistoryBtn')).click();
+
+    const raw = localStorage.getItem('twitter-analyzer:history');
+    expect(raw).not.toBeNull();
+    const parsed = JSON.parse(/** @type {string} */ (raw));
+    expect(parsed.length).toBe(1);
+    expect(parsed[0].text).toBe('memorable tweet to save');
+  });
+
+  it('language toggle flips dir attribute', () => {
+    expect(document.documentElement.getAttribute('dir')).toBe('rtl');
+    /** @type {HTMLButtonElement} */ (document.getElementById('langBtn')).click();
+    expect(document.documentElement.getAttribute('dir')).toBe('ltr');
   });
 });

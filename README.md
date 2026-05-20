@@ -1,14 +1,14 @@
-# Twitter Analytics Tool - أداة تحليل تغريدات تويتر
+# Twitter Analytics Tool - محلّل التغريدات الذكي
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-2.0.0-cd7f32)
+![Version](https://img.shields.io/badge/version-3.0.0-cd7f32)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Language](https://img.shields.io/badge/language-Arabic-green)
+![Language](https://img.shields.io/badge/language-Arabic%20%2F%20English-green)
 ![Platform](https://img.shields.io/badge/platform-Web-orange)
-![Tests](https://img.shields.io/badge/tests-95%20passing-2da44e)
+![Tests](https://img.shields.io/badge/tests-128%20passing-2da44e)
 
-**أداة ويب متقدمة لتحليل التغريدات واستخراج رؤى ذكية من المحتوى النصي**
+**تحليل عميق لتغريدة واحدة: كشف الذكاء الاصطناعي، توافقية خوارزمية X، وتوصيات للتحسين**
 
 [العربية](#arabic) | [English](#english)
 
@@ -19,7 +19,19 @@
 <a name="arabic"></a>
 ## 📋 نظرة عامة
 
-**أداة تحليل تغريدات تويتر** هي تطبيق ويب شامل يوفر تحليلاً عميقاً للتغريدات بدون الحاجة إلى Twitter API. تعمل الأداة محلياً في المتصفح وتحترم خصوصيتك بالكامل، حيث لا يتم إرسال أي بيانات إلى خوادم خارجية. مصممة بواجهة عصرية مستوحاة من Claude AI مع تصميم متجاوب يعمل على جميع الأجهزة.
+**محلّل التغريدات الذكي v3.0** هو تطبيق ويب يُحلّل تغريدة واحدة على عمق متعدد الأبعاد: كشف احتمالية كون النص مكتوباً بالذكاء الاصطناعي، حساب توافقية النص مع خوارزمية X الجديدة ([xai-org/x-algorithm](https://github.com/xai-org/x-algorithm)) عبر 15 احتمال تفاعل، اقتراح إعادات صياغة محسّنة، ومقارنة A/B بين تغريدتين. يعمل التطبيق بالكامل محلياً في المتصفح بدون أي خادم — خصوصية كاملة.
+
+### الميزات الجديدة في v3.0
+- 🤖 **كشف الذكاء الاصطناعي**: 9 إشارات استدلالية + قاموس عبارات LLM (عربي/إنجليزي)
+- 🐦 **توافقية خوارزمية X**: محرك تنبؤ بـ15 احتمال تفاعل (like, reply, repost, share, click, profile_click, video_view, photo_expand, dwell, follow, not_interested, block, mute, report, hide) وفق نموذج xai-org
+- 🪄 **مُحسِّن ذكي**: 3 إعادات صياغة (أقصر/سؤال/أكثر إيجابية) مع درجة متوقعة جديدة
+- 📊 **التفاعل المتوقع**: عرض احتمالات الإجراءات الـ15
+- ✅ **فحص نقاط الضعف**: قائمة تحقّق قبل النشر
+- 🎯 **كشف النبرة**: 6 فئات (رسمي/ودود/تعليمي/ترويجي/تحفيزي/تساؤلي) مع أفضل وقت للنشر
+- ⚔️ **مقارنة A/B**: حقلان جنبيان لمقارنة تغريدتين
+- 🗂️ **سجل التغريدات**: آخر 20 تحليلاً في localStorage
+- 🖼️ **بطاقة مشاركة**: تصدير PNG بكل النتائج
+- 🌓 **وضع داكن/فاتح** + تبديل لغة (AR/EN) محفوظ في localStorage
 
 ---
 
