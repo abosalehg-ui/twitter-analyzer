@@ -17,6 +17,7 @@ describe('end-to-end DOM integration', () => {
   });
 
   beforeEach(() => {
+    localStorage.clear();
     const html = readFileSync(resolve(__dirname, '../index.html'), 'utf-8');
     document.documentElement.innerHTML = html.replace(
       /<!DOCTYPE[^>]*>|<html[^>]*>|<\/html>/g,
@@ -70,5 +71,43 @@ describe('end-to-end DOM integration', () => {
     expect(hashtagList.textContent).toContain('2');
     expect(mentionList.textContent).toContain('@alice');
     expect(emojiStats.textContent).toContain('😊');
+  });
+
+  it('clear button wipes textarea, results, and storage', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
+    textarea.value = 'hello #world';
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    localStorage.setItem('twitter-analyzer:last-input', 'old content');
+
+    /** @type {HTMLButtonElement} */ (document.getElementById('clearBtn')).click();
+    expect(textarea.value).toBe('');
+    expect(document.getElementById('results')?.classList.contains('show')).toBe(false);
+    expect(localStorage.getItem('twitter-analyzer:last-input')).toBeNull();
+  });
+
+  it('renders SVG charts for length distribution and sentiment donut', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
+    textarea.value = 'short tweet 😊\n' + 'a'.repeat(60) + '\n' + 'b'.repeat(200) + ' terrible';
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    expect(document.querySelector('#lengthChart svg')).not.toBeNull();
+    expect(document.querySelector('#sentimentDonut svg')).not.toBeNull();
+  });
+
+  it('export buttons do not crash when analysis is present', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweets'));
+    textarea.value = 'hello #world @alice 😊';
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    // We don't trigger actual downloads; just verify the buttons exist and clicking
+    // them does not throw. URL.createObjectURL is mocked by jsdom-incompat shim:
+    // @ts-ignore
+    if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test';
+    // @ts-ignore
+    if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {};
+
+    expect(() => /** @type {HTMLButtonElement} */ (document.getElementById('exportCsvBtn')).click()).not.toThrow();
+    expect(() => /** @type {HTMLButtonElement} */ (document.getElementById('exportJsonBtn')).click()).not.toThrow();
   });
 });

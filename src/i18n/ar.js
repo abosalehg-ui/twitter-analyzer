@@ -22,6 +22,12 @@ export const ar = {
   'error.invalid': '⚠️ لم يتم العثور على تغريدات صالحة',
   'error.noAnalysis': '⚠️ الرجاء إجراء التحليل أولاً',
   'success.export': '✅ تم تصدير التقرير بنجاح!',
+  'success.restored': '↩️ تمت استعادة آخر إدخال محفوظ',
+
+  'btn.exportTxt': '📥 TXT',
+  'btn.exportCsv': '📊 CSV',
+  'btn.exportJson': '🗂️ JSON',
+  'btn.clear': '🗑️ مسح',
 
   'insight.short': 'تغريداتك قصيرة ومباشرة - رائع للتفاعل السريع! 🎯',
   'insight.long': 'تغريداتك تحتوي على تفاصيل كثيرة - مناسب للمحتوى التعليمي 📚',

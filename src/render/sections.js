@@ -1,6 +1,7 @@
 // @ts-check
 
 import { el, replaceChildren, setText } from './dom.js';
+import { renderLengthBarsSvg, renderSentimentDonutSvg } from './charts.js';
 import { t } from '../i18n/index.js';
 
 /**
@@ -51,6 +52,9 @@ export function renderSentiment(scores, total) {
 
   negativeEl.style.width = neg + '%';
   negativeEl.textContent = neg > 5 ? `${t('sentiment.negative')} ${neg}%` : '';
+
+  const donut = document.getElementById('sentimentDonut');
+  if (donut) renderSentimentDonutSvg(/** @type {HTMLElement} */ (donut), scores);
 }
 
 /**
@@ -115,39 +119,13 @@ export function renderWordCloud(words) {
 }
 
 /**
- * Render length-distribution bar chart.
+ * Render length-distribution chart as SVG.
  * @param {AnalysisResult['lengths']} lengths
  * @param {number} total
  */
 export function renderLengthChart(lengths, total) {
   const container = /** @type {HTMLElement} */ (document.getElementById('lengthChart'));
-  const data = [
-    {
-      label: t('length.short'),
-      value: lengths.short,
-      percent: total > 0 ? (lengths.short / total) * 100 : 0,
-    },
-    {
-      label: t('length.medium'),
-      value: lengths.medium,
-      percent: total > 0 ? (lengths.medium / total) * 100 : 0,
-    },
-    {
-      label: t('length.long'),
-      value: lengths.long,
-      percent: total > 0 ? (lengths.long / total) * 100 : 0,
-    },
-  ];
-
-  const nodes = data.map((item) =>
-    el('div', { class: 'bar-item' }, [
-      el('div', { class: 'bar-label' }, item.label),
-      el('div', { class: 'bar-fill', style: { width: `${item.percent}%` } }, [
-        el('div', { class: 'bar-value' }, `${item.value} (${Math.round(item.percent)}%)`),
-      ]),
-    ])
-  );
-  replaceChildren(container, nodes);
+  renderLengthBarsSvg(container, lengths, total);
 }
 
 /**

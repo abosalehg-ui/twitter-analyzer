@@ -22,6 +22,12 @@ export const en = {
   'error.invalid': '⚠️ No valid tweets found',
   'error.noAnalysis': '⚠️ Please run the analysis first',
   'success.export': '✅ Report exported successfully!',
+  'success.restored': '↩️ Last saved input restored',
+
+  'btn.exportTxt': '📥 TXT',
+  'btn.exportCsv': '📊 CSV',
+  'btn.exportJson': '🗂️ JSON',
+  'btn.clear': '🗑️ Clear',
 
   'insight.short': 'Your tweets are short and direct — great for quick engagement! 🎯',
   'insight.long': 'Your tweets are detailed — great for educational content 📚',
