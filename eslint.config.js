@@ -16,7 +16,10 @@ export default [
         clearTimeout: 'readonly',
         HTMLElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
+        HTMLButtonElement: 'readonly',
         Node: 'readonly',
+        SVGElement: 'readonly',
+        __dirname: 'readonly',
       },
     },
     rules: {

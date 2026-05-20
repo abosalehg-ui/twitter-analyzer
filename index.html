@@ -39,7 +39,20 @@
           </div>
           <div class="button-group">
             <button class="btn" id="analyzeBtn" type="button">🔍 تحليل شامل</button>
-            <button class="btn btn-secondary" id="exportBtn" type="button">📥 تصدير النتائج</button>
+            <button class="btn btn-secondary" id="clearBtn" type="button" aria-label="مسح الإدخال">
+              🗑️ مسح
+            </button>
+          </div>
+          <div class="button-group export-group" aria-label="خيارات التصدير">
+            <button class="btn btn-secondary" id="exportBtn" type="button" aria-label="تصدير كملف نصي">
+              📥 TXT
+            </button>
+            <button class="btn btn-secondary" id="exportCsvBtn" type="button" aria-label="تصدير كملف CSV">
+              📊 CSV
+            </button>
+            <button class="btn btn-secondary" id="exportJsonBtn" type="button" aria-label="تصدير كملف JSON">
+              🗂️ JSON
+            </button>
           </div>
         </section>
 
@@ -77,6 +90,9 @@
               <div class="sentiment-positive" id="sentimentPositive">0%</div>
               <div class="sentiment-neutral" id="sentimentNeutral">0%</div>
               <div class="sentiment-negative" id="sentimentNegative">0%</div>
+            </div>
+            <div class="sentiment-donut-wrap">
+              <div id="sentimentDonut" class="sentiment-donut"></div>
             </div>
             <p
               style="

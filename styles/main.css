@@ -119,6 +119,15 @@ body {
   gap: 12px;
 }
 
+.export-group {
+  margin-top: 12px;
+}
+
+.export-group .btn {
+  flex: 1;
+  min-width: 100px;
+}
+
 .btn {
   background: #cd7f32;
   color: #1d1d1f;
@@ -343,6 +352,24 @@ body {
   border-radius: 10px;
   overflow: hidden;
   margin: 20px 0;
+}
+
+.sentiment-donut-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 8px;
+}
+
+.sentiment-donut {
+  width: 220px;
+  height: 220px;
+  max-width: 100%;
+}
+
+.sentiment-donut svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .sentiment-positive {
