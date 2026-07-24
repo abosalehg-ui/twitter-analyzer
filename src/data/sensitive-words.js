@@ -43,7 +43,15 @@ export const SENSITIVE_PATTERNS = {
   },
   // Spam-flavored words that algorithms penalize hard
   spammy: {
-    ar: ['اربح المال', 'ربح سريع', 'دخل سريع', 'اشترك الان', 'اشترك الآن', 'فرصه ذهبيه', 'فرصة ذهبية'],
+    ar: [
+      'اربح المال',
+      'ربح سريع',
+      'دخل سريع',
+      'اشترك الان',
+      'اشترك الآن',
+      'فرصه ذهبيه',
+      'فرصة ذهبية',
+    ],
     en: [
       'click here',
       'buy now',

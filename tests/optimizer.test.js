@@ -40,7 +40,9 @@ describe('suggestRewrites', () => {
     const text = 'hello world this is a test of the optimizer system today friend';
     const suggestions = suggestRewrites(text, scoreAlgorithm(text).score);
     for (let i = 1; i < suggestions.length; i++) {
-      expect(suggestions[i - 1].predictedScore).toBeGreaterThanOrEqual(suggestions[i].predictedScore);
+      expect(suggestions[i - 1].predictedScore).toBeGreaterThanOrEqual(
+        suggestions[i].predictedScore
+      );
     }
   });
 });

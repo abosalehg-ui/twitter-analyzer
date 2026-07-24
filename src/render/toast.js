@@ -23,7 +23,7 @@ export function toast(message, kind = 'info', duration = 2800) {
   const node = el('div', { class: `toast toast-${kind}` }, message);
   root.appendChild(node);
   // Force reflow so the enter transition runs
-  void /** @type {HTMLElement} */ (node).offsetWidth;
+  void (/** @type {HTMLElement} */ (node).offsetWidth);
   node.classList.add('show');
   setTimeout(() => {
     node.classList.remove('show');

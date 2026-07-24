@@ -3,7 +3,8 @@
 export const en = {
   // App
   'app.title': 'Smart Tweet Analyzer',
-  'app.subtitle': 'Deep diagnostics for your tweet: AI detection, X-algorithm fit, and improvement suggestions',
+  'app.subtitle':
+    'Deep diagnostics for your tweet: AI detection, X-algorithm fit, and improvement suggestions',
   'app.dir': 'ltr',
   'app.langSwitch': 'AR',
 
@@ -40,7 +41,8 @@ export const en = {
 
   // Confirmations (destructive actions)
   'confirm.clearInput': 'This will clear the current tweet text. Continue?',
-  'confirm.clearHistory': 'This will permanently delete every saved analysis in your history. Continue?',
+  'confirm.clearHistory':
+    'This will permanently delete every saved analysis in your history. Continue?',
   'confirm.deleteEntry': 'This will delete this analysis from your history. Continue?',
 
   // Tabs
@@ -148,7 +150,7 @@ export const en = {
   'algo.rec.tooManyHashtags': 'Too many hashtags — limit to 1-2 to avoid spam flagging.',
   'algo.rec.addHashtag': 'One relevant hashtag may widen reach.',
   'algo.rec.tooManyMentions': 'Too many mentions — keep to 2-3 truly relevant ones.',
-  'algo.rec.addQuestion': "Add a question to trigger replies (reply weight is high in the algo).",
+  'algo.rec.addQuestion': 'Add a question to trigger replies (reply weight is high in the algo).',
   'algo.rec.removeBait': 'Remove engagement-bait phrases ("RT if…") — heavily penalized.',
   'algo.rec.removeToxicity': 'Hostile tone triggers blocks/mutes — soften the wording.',
   'algo.rec.removeSpam': 'Marketing language lowers trust — use natural phrasing.',
@@ -163,7 +165,8 @@ export const en = {
   'engagement.positiveActions': 'Positive actions',
   'engagement.negativeActions': 'Negative actions',
   'engagement.probability': 'Probability',
-  'engagement.subtitle': 'Relative likelihood per action, derived from text features. Not absolute numbers.',
+  'engagement.subtitle':
+    'Relative likelihood per action, derived from text features. Not absolute numbers.',
 
   // Optimizer
   'optimizer.title': 'Tweet Optimizer',

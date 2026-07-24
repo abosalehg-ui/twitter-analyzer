@@ -22,10 +22,7 @@ describe('end-to-end DOM integration (single-tweet v3.0)', () => {
     // path is what is under test.
     window.confirm = () => true;
     const html = readFileSync(resolve(__dirname, '../index.html'), 'utf-8');
-    document.documentElement.innerHTML = html.replace(
-      /<!DOCTYPE[^>]*>|<html[^>]*>|<\/html>/g,
-      ''
-    );
+    document.documentElement.innerHTML = html.replace(/<!DOCTYPE[^>]*>|<html[^>]*>|<\/html>/g, '');
     // jsdom blob URL polyfill
     // @ts-ignore
     if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test';

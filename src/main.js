@@ -122,7 +122,11 @@ function toggleLocale() {
   if (state.current) {
     renderAll(state.current);
     if (state.compareWith) {
-      renderComparison(/** @type {HTMLElement} */ ($('comparisonView')), state.current, state.compareWith);
+      renderComparison(
+        /** @type {HTMLElement} */ ($('comparisonView')),
+        state.current,
+        state.compareWith
+      );
     }
   }
   renderHistoryList();
@@ -229,7 +233,12 @@ function renderAll(data) {
   renderAi(t.panelOf('ai'), data);
   renderAlgorithm(t.panelOf('algorithm'), data);
   renderEngagement(t.panelOf('engagement'), data);
-  renderOptimizer(t.panelOf('optimizer'), data, suggestRewrites(data.text, data.algorithm.score), applyOptimization);
+  renderOptimizer(
+    t.panelOf('optimizer'),
+    data,
+    suggestRewrites(data.text, data.algorithm.score),
+    applyOptimization
+  );
   renderWeakness(t.panelOf('weakness'), data);
   renderTone(t.panelOf('tone'), data);
   renderDetails(t.panelOf('details'), data);

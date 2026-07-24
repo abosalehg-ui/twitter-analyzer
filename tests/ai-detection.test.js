@@ -59,7 +59,8 @@ describe('signal primitives', () => {
   });
 
   it('burstiness: varied sentences score low (human-like)', () => {
-    const bursty = 'wow! this is a much longer sentence that goes on and on and on without stopping much. ok bye.';
+    const bursty =
+      'wow! this is a much longer sentence that goes on and on and on without stopping much. ok bye.';
     expect(burstinessSignal(bursty)).toBeLessThan(0.7);
   });
 
@@ -68,7 +69,9 @@ describe('signal primitives', () => {
   });
 
   it('emojiDensity: zero emojis on long text raises the score', () => {
-    expect(emojiDensitySignal('this is a moderately long tweet without any emojis at all here')).toBeGreaterThan(0.5);
+    expect(
+      emojiDensitySignal('this is a moderately long tweet without any emojis at all here')
+    ).toBeGreaterThan(0.5);
   });
 
   it('lexicalDiversity: very high TTR is suspicious', () => {

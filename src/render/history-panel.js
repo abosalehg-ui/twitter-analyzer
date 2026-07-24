@@ -16,9 +16,7 @@ import { t } from '../i18n/index.js';
  */
 export function renderHistory(root, entries, handlers) {
   if (entries.length === 0) {
-    replaceChildren(root, [
-      el('p', { class: 'empty-message' }, t('history.empty')),
-    ]);
+    replaceChildren(root, [el('p', { class: 'empty-message' }, t('history.empty'))]);
     return;
   }
 
@@ -33,9 +31,34 @@ export function renderHistory(root, entries, handlers) {
         el('span', { class: 'history-chip' }, `${e.length} ${t('overview.chars')}`),
       ]),
       el('div', { class: 'history-actions' }, [
-        el('button', { type: 'button', class: 'btn btn-secondary btn-xs', onclick: () => handlers.onLoad(e.id) }, t('history.load')),
-        el('button', { type: 'button', class: 'btn btn-secondary btn-xs', onclick: () => handlers.onCompare(e.id) }, t('history.compareWithCurrent')),
-        el('button', { type: 'button', class: 'btn-icon', 'aria-label': t('aria.deleteEntry'), onclick: () => handlers.onDelete(e.id) }, t('btn.delete')),
+        el(
+          'button',
+          {
+            type: 'button',
+            class: 'btn btn-secondary btn-xs',
+            onclick: () => handlers.onLoad(e.id),
+          },
+          t('history.load')
+        ),
+        el(
+          'button',
+          {
+            type: 'button',
+            class: 'btn btn-secondary btn-xs',
+            onclick: () => handlers.onCompare(e.id),
+          },
+          t('history.compareWithCurrent')
+        ),
+        el(
+          'button',
+          {
+            type: 'button',
+            class: 'btn-icon',
+            'aria-label': t('aria.deleteEntry'),
+            onclick: () => handlers.onDelete(e.id),
+          },
+          t('btn.delete')
+        ),
       ]),
     ]);
   });

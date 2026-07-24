@@ -63,8 +63,7 @@ export function burstinessSignal(text) {
   const lengths = sentences.map((s) => s.length);
   const mean = lengths.reduce((a, b) => a + b, 0) / lengths.length;
   if (mean === 0) return 0.5;
-  const variance =
-    lengths.reduce((acc, x) => acc + (x - mean) ** 2, 0) / lengths.length;
+  const variance = lengths.reduce((acc, x) => acc + (x - mean) ** 2, 0) / lengths.length;
   const std = Math.sqrt(variance);
   const cv = std / mean; // coefficient of variation
   // Map: cv < 0.15 → very AI-like (1.0); cv > 0.8 → very human (0.0)
@@ -137,7 +136,8 @@ export function clicheSignal(text) {
     if (norm.includes(normForMatch(phrase))) matches.push(phrase);
   }
   // 1 match = 0.55; 2 = 0.8; 3+ = 1.0
-  const score = matches.length === 0 ? 0 : matches.length === 1 ? 0.55 : matches.length === 2 ? 0.8 : 1;
+  const score =
+    matches.length === 0 ? 0 : matches.length === 1 ? 0.55 : matches.length === 2 ? 0.8 : 1;
   return { score, matches };
 }
 
@@ -237,14 +237,29 @@ export function detectAi(text) {
   /** @type {SignalResult[]} */
   const signals = [
     { key: 'burstiness', raw: burst, weight: SIGNAL_WEIGHTS.burstiness, contribution: 0 },
-    { key: 'lexical_diversity', raw: lex, weight: SIGNAL_WEIGHTS.lexical_diversity, contribution: 0 },
+    {
+      key: 'lexical_diversity',
+      raw: lex,
+      weight: SIGNAL_WEIGHTS.lexical_diversity,
+      contribution: 0,
+    },
     { key: 'formality', raw: form, weight: SIGNAL_WEIGHTS.formality, contribution: 0 },
-    { key: 'punctuation_perfection', raw: punct, weight: SIGNAL_WEIGHTS.punctuation_perfection, contribution: 0 },
+    {
+      key: 'punctuation_perfection',
+      raw: punct,
+      weight: SIGNAL_WEIGHTS.punctuation_perfection,
+      contribution: 0,
+    },
     { key: 'cliches', raw: cliche.score, weight: SIGNAL_WEIGHTS.cliches, contribution: 0 },
     { key: 'emoji_density', raw: emoji, weight: SIGNAL_WEIGHTS.emoji_density, contribution: 0 },
     { key: 'typo_absence', raw: typo.score, weight: SIGNAL_WEIGHTS.typo_absence, contribution: 0 },
     { key: 'hashtag_pattern', raw: hash, weight: SIGNAL_WEIGHTS.hashtag_pattern, contribution: 0 },
-    { key: 'sentence_starters', raw: starts, weight: SIGNAL_WEIGHTS.sentence_starters, contribution: 0 },
+    {
+      key: 'sentence_starters',
+      raw: starts,
+      weight: SIGNAL_WEIGHTS.sentence_starters,
+      contribution: 0,
+    },
   ];
 
   let total = 0;
