@@ -3,14 +3,13 @@
 import { describe, it, expect } from 'vitest';
 import { scoreAlgorithm } from '../src/analysis/algorithm-score.js';
 import { ACTION_KEYS } from '../src/data/algorithm-weights.js';
-import {
-  extractFeatures,
-  predictProbabilities,
-} from '../src/analysis/engagement-predictor.js';
+import { extractFeatures, predictProbabilities } from '../src/analysis/engagement-predictor.js';
 
 describe('scoreAlgorithm', () => {
   it('returns score in 0..100 range and reach bucket', () => {
-    const r = scoreAlgorithm('Just shipped a new feature! Excited to share it 🚀 What do you think?');
+    const r = scoreAlgorithm(
+      'Just shipped a new feature! Excited to share it 🚀 What do you think?'
+    );
     expect(r.score).toBeGreaterThanOrEqual(0);
     expect(r.score).toBeLessThanOrEqual(100);
     expect(['low', 'medium', 'good', 'excellent']).toContain(r.reach);
@@ -24,7 +23,9 @@ describe('scoreAlgorithm', () => {
 
   it('penalizes engagement bait', () => {
     const bait = scoreAlgorithm('RT to win this giveaway! Follow and like to enter!');
-    const clean = scoreAlgorithm('Just launched a new project, sharing the journey here. Curious to hear your take?');
+    const clean = scoreAlgorithm(
+      'Just launched a new project, sharing the journey here. Curious to hear your take?'
+    );
     expect(clean.score).toBeGreaterThan(bait.score);
   });
 

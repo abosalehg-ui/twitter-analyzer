@@ -35,6 +35,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Keeps the formatting baseline from drifting back. Fix locally with
+      # `npm run format`.
+      - name: Check formatting
+        run: npm run format:check
+
       - name: Run tests
         run: npm test
 

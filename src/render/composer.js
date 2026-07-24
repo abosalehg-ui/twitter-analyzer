@@ -102,22 +102,25 @@ export function buildComposer(opts) {
 
   const counterHost = el('div', { class: 'char-counter', 'aria-live': 'polite' });
   const sweetspotBar = el('div', { class: 'sweetspot-bar' }, [
-    el('div', { class: 'sweetspot-zone', style: {
-      // sweet spot zone 70-150 of 280
-      // 70/280 = 25%; 150/280 ≈ 53.57%
-      left: (SWEET_MIN / MAX) * 100 + '%',
-      width: ((SWEET_MAX - SWEET_MIN) / MAX) * 100 + '%',
-    } }),
+    el('div', {
+      class: 'sweetspot-zone',
+      style: {
+        // sweet spot zone 70-150 of 280
+        // 70/280 = 25%; 150/280 ≈ 53.57%
+        left: (SWEET_MIN / MAX) * 100 + '%',
+        width: ((SWEET_MAX - SWEET_MIN) / MAX) * 100 + '%',
+      },
+    }),
     el('div', { class: 'sweetspot-fill' }),
   ]);
 
-  const help = el(
-    'div',
-    { class: 'composer-help', id: opts.id + '-help' },
-    t('composer.help')
-  );
+  const help = el('div', { class: 'composer-help', id: opts.id + '-help' }, t('composer.help'));
 
-  const label = el('label', { for: opts.id, class: 'composer-label' }, t(opts.labelKey ?? 'composer.label'));
+  const label = el(
+    'label',
+    { for: opts.id, class: 'composer-label' },
+    t(opts.labelKey ?? 'composer.label')
+  );
 
   const root = el('div', { class: 'composer' }, [
     label,
@@ -126,9 +129,7 @@ export function buildComposer(opts) {
     el('div', { class: 'composer-meta' }, [help, counterHost]),
   ]);
 
-  textarea.addEventListener('input', () =>
-    updateCharCounter(textarea, counterHost, sweetspotBar)
-  );
+  textarea.addEventListener('input', () => updateCharCounter(textarea, counterHost, sweetspotBar));
   updateCharCounter(textarea, counterHost, sweetspotBar);
 
   return { root, textarea, counterHost, sweetspotBar };

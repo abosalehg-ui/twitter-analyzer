@@ -163,8 +163,7 @@ export const ar = {
   'engagement.positiveActions': 'الإجراءات الإيجابية',
   'engagement.negativeActions': 'الإجراءات السلبية',
   'engagement.probability': 'الاحتمال',
-  'engagement.subtitle':
-    'تقدير نسبي لاحتمال كل إجراء بناءً على خصائص النص. ليست أرقاماً مطلقة.',
+  'engagement.subtitle': 'تقدير نسبي لاحتمال كل إجراء بناءً على خصائص النص. ليست أرقاماً مطلقة.',
 
   // Optimizer
   'optimizer.title': 'مُحسِّن التغريدة',

@@ -35,7 +35,12 @@ const QUESTION_RE = /[?؟]/;
 const CTA_AR = ['شاركني', 'علق', 'علّق', 'صوّت', 'صوت', 'رايكم', 'رأيكم', 'برايكم', 'برأيكم'];
 const CTA_EN = ['vote', 'share your', 'tell me', 'let me know', 'reply with', 'comment'];
 const LINK_RE = /https?:\/\/\S+/g;
-const MEDIA_HOSTS = ['pic.twitter.com', 'x.com/i/web/status', 'twitter.com/i/web/status', 'video.twimg.com'];
+const MEDIA_HOSTS = [
+  'pic.twitter.com',
+  'x.com/i/web/status',
+  'twitter.com/i/web/status',
+  'video.twimg.com',
+];
 
 /**
  * Lowercase + normalize Arabic.
@@ -125,7 +130,13 @@ function clamp01(x) {
  */
 export function predictProbabilities(f) {
   // Base "engagement potential" from length sweet spot
-  const lengthBoost = f.isInBaitSweetspot ? 0.15 : f.length < 30 ? -0.1 : f.length > 240 ? -0.05 : 0;
+  const lengthBoost = f.isInBaitSweetspot
+    ? 0.15
+    : f.length < 30
+      ? -0.1
+      : f.length > 240
+        ? -0.05
+        : 0;
   const positiveBoost = f.sentiment === 'positive' ? 0.1 : f.sentiment === 'negative' ? -0.05 : 0;
   const baitPenalty = f.baitHits * 0.15;
   const toxPenalty = f.toxicityHits * 0.1;
@@ -137,7 +148,15 @@ export function predictProbabilities(f) {
   // === Positive actions ===
   // like — broadest engagement
   const like = clamp01(
-    0.35 + lengthBoost + positiveBoost + f.emojiCount * 0.02 - baitPenalty - toxPenalty - spamPenalty - linkPenalty - mentionPenalty
+    0.35 +
+      lengthBoost +
+      positiveBoost +
+      f.emojiCount * 0.02 -
+      baitPenalty -
+      toxPenalty -
+      spamPenalty -
+      linkPenalty -
+      mentionPenalty
   );
 
   // reply — requires question or CTA
@@ -150,13 +169,18 @@ export function predictProbabilities(f) {
 
   // repost — driven by length sweet spot + positive tone, hurt by external links
   const repost = clamp01(
-    0.2 + lengthBoost + positiveBoost - linkPenalty - baitPenalty - spamPenalty - hashtagPenalty - mentionPenalty
+    0.2 +
+      lengthBoost +
+      positiveBoost -
+      linkPenalty -
+      baitPenalty -
+      spamPenalty -
+      hashtagPenalty -
+      mentionPenalty
   );
 
   // share — like repost but lower base
-  const share = clamp01(
-    0.12 + lengthBoost * 0.7 + positiveBoost * 0.5 - linkPenalty - baitPenalty
-  );
+  const share = clamp01(0.12 + lengthBoost * 0.7 + positiveBoost * 0.5 - linkPenalty - baitPenalty);
 
   // click — driven by presence of links AND interesting hook
   const click = clamp01(
@@ -164,9 +188,7 @@ export function predictProbabilities(f) {
   );
 
   // profile_click — high when tweet is interesting & medium-length, no links
-  const profile_click = clamp01(
-    0.15 + (f.isInBaitSweetspot ? 0.1 : 0) - linkPenalty - baitPenalty
-  );
+  const profile_click = clamp01(0.15 + (f.isInBaitSweetspot ? 0.1 : 0) - linkPenalty - baitPenalty);
 
   // video_view / photo_expand — depend on media url
   const video_view = clamp01(f.hasMediaUrl ? 0.4 : 0.02);
@@ -177,12 +199,21 @@ export function predictProbabilities(f) {
 
   // follow — driven by quality content, no bait, no spam
   const follow = clamp01(
-    0.08 + (f.isInBaitSweetspot ? 0.04 : 0) + positiveBoost * 0.5 - baitPenalty - spamPenalty - toxPenalty
+    0.08 +
+      (f.isInBaitSweetspot ? 0.04 : 0) +
+      positiveBoost * 0.5 -
+      baitPenalty -
+      spamPenalty -
+      toxPenalty
   );
 
   // === Negative actions === (higher when content is problematic)
   const not_interested = clamp01(
-    0.05 + baitPenalty + spamPenalty * 0.7 + (f.linkCount > 2 ? 0.1 : 0) + (f.politicalHits > 0 ? 0.08 : 0)
+    0.05 +
+      baitPenalty +
+      spamPenalty * 0.7 +
+      (f.linkCount > 2 ? 0.1 : 0) +
+      (f.politicalHits > 0 ? 0.08 : 0)
   );
   const block_author = clamp01(0.01 + toxPenalty * 1.2 + spamPenalty * 0.5);
   const mute_author = clamp01(

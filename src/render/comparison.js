@@ -24,7 +24,8 @@ export function renderComparison(root, a, b) {
   };
 
   let verdict = t('compare.tie');
-  if (a.algorithm.score > b.algorithm.score) verdict = t('compare.winner') + ': ' + t('compare.tweetA');
+  if (a.algorithm.score > b.algorithm.score)
+    verdict = t('compare.winner') + ': ' + t('compare.tweetA');
   else if (b.algorithm.score > a.algorithm.score)
     verdict = t('compare.winner') + ': ' + t('compare.tweetB');
 

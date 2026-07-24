@@ -148,7 +148,11 @@ export function renderAi(root, data) {
     el('div', { class: 'gauge' }, [gaugeMeter(ai.score, t('ai.score'), 100, aiColor(ai.score))]),
     el('div', { class: 'verdict-text' }, [
       el('h3', {}, t(aiVerdict(ai.score))),
-      el('p', { class: 'verdict-confidence' }, `${t('ai.confidence')}: ${t('ai.confidence.' + ai.confidence)}`),
+      el(
+        'p',
+        { class: 'verdict-confidence' },
+        `${t('ai.confidence')}: ${t('ai.confidence.' + ai.confidence)}`
+      ),
     ]),
   ]);
 
@@ -213,35 +217,31 @@ export function renderAlgorithm(root, data) {
   );
 
   // Show top 5 positives and worst 3 negatives by abs contribution
-  const positivesEl = el(
-    'div',
-    { class: 'algo-block' },
-    [
-      el('h4', {}, t('algo.positives')),
-      ...a.positives.slice(0, 5).map((c) =>
+  const positivesEl = el('div', { class: 'algo-block' }, [
+    el('h4', {}, t('algo.positives')),
+    ...a.positives
+      .slice(0, 5)
+      .map((c) =>
         el('div', { class: 'signal-row' }, [
           el('div', { class: 'signal-label' }, t('action.' + c.action)),
           rowBar(c.probability * 100, '#2da44e'),
           el('div', { class: 'signal-value' }, `${(c.probability * 100).toFixed(0)}%`),
         ])
       ),
-    ]
-  );
+  ]);
 
-  const negativesEl = el(
-    'div',
-    { class: 'algo-block' },
-    [
-      el('h4', {}, t('algo.negatives')),
-      ...a.negatives.slice(0, 3).map((c) =>
+  const negativesEl = el('div', { class: 'algo-block' }, [
+    el('h4', {}, t('algo.negatives')),
+    ...a.negatives
+      .slice(0, 3)
+      .map((c) =>
         el('div', { class: 'signal-row' }, [
           el('div', { class: 'signal-label' }, t('action.' + c.action)),
           rowBar(c.probability * 100, '#cf222e'),
           el('div', { class: 'signal-value' }, `${(c.probability * 100).toFixed(0)}%`),
         ])
       ),
-    ]
-  );
+  ]);
 
   replaceChildren(root, [
     header,
@@ -303,7 +303,11 @@ export function renderOptimizer(root, data, suggestions, onApply) {
       el('div', { class: 'optimizer-card-head' }, [
         el('strong', {}, t(s.explainKey)),
         el('div', { class: 'optimizer-scores' }, [
-          el('span', { class: 'predicted-score' }, `${t('optimizer.predictedScore')}: ${s.predictedScore}/100`),
+          el(
+            'span',
+            { class: 'predicted-score' },
+            `${t('optimizer.predictedScore')}: ${s.predictedScore}/100`
+          ),
           el('span', { class: deltaClass }, `${deltaSign}${s.delta}`),
         ]),
       ]),
@@ -379,11 +383,22 @@ export function renderTone(root, data) {
       el('div', { class: 'tone-primary' }, t('tone.' + primary)),
       el('div', { class: 'tone-time' }, t('tone.bestTime.' + primary)),
     ]),
-    chips.length > 0 ? el('div', { class: 'chip-row' }, chips) : el('p', { class: 'empty-message' }, '—'),
+    chips.length > 0
+      ? el('div', { class: 'chip-row' }, chips)
+      : el('p', { class: 'empty-message' }, '—'),
     el('div', { class: 'readability-grid' }, [
-      el('div', { class: 'kv' }, [el('span', {}, t('read.avgWord')), el('strong', {}, String(data.readability.avgWordLength))]),
-      el('div', { class: 'kv' }, [el('span', {}, t('read.avgSentence')), el('strong', {}, String(data.readability.avgSentenceLength))]),
-      el('div', { class: 'kv' }, [el('span', {}, t('read.longRatio')), el('strong', {}, `${Math.round(data.readability.longRatio * 100)}%`)]),
+      el('div', { class: 'kv' }, [
+        el('span', {}, t('read.avgWord')),
+        el('strong', {}, String(data.readability.avgWordLength)),
+      ]),
+      el('div', { class: 'kv' }, [
+        el('span', {}, t('read.avgSentence')),
+        el('strong', {}, String(data.readability.avgSentenceLength)),
+      ]),
+      el('div', { class: 'kv' }, [
+        el('span', {}, t('read.longRatio')),
+        el('strong', {}, `${Math.round(data.readability.longRatio * 100)}%`),
+      ]),
     ]),
   ]);
 }
@@ -398,7 +413,13 @@ export function renderDetails(root, data) {
     const content =
       items.length === 0
         ? [el('p', { class: 'empty-message' }, t(emptyKey))]
-        : [el('div', { class: 'chip-row' }, items.map((k) => el('span', { class: 'chip' }, k)))];
+        : [
+            el(
+              'div',
+              { class: 'chip-row' },
+              items.map((k) => el('span', { class: 'chip' }, k))
+            ),
+          ];
     return el('section', { class: 'details-block' }, [el('h4', {}, t(titleKey)), ...content]);
   };
 
