@@ -32,6 +32,17 @@ export const ar = {
   'btn.clearHistory': 'مسح السجل',
   'btn.toggleTheme': '🌓',
 
+  // Accessibility labels (screen readers)
+  'aria.themeToggle': 'تبديل المظهر بين الفاتح والداكن',
+  'aria.langSwitch': 'تبديل اللغة إلى الإنجليزية',
+  'aria.tabs': 'أقسام التحليل',
+  'aria.deleteEntry': 'حذف هذا التحليل من السجل',
+
+  // Confirmations (destructive actions)
+  'confirm.clearInput': 'سيتم مسح نص التغريدة الحالي. هل تريد المتابعة؟',
+  'confirm.clearHistory': 'سيتم حذف كل التحليلات المحفوظة في السجل نهائياً. هل تريد المتابعة؟',
+  'confirm.deleteEntry': 'سيتم حذف هذا التحليل من السجل. هل تريد المتابعة؟',
+
   // Tabs
   'tab.overview': 'نظرة عامة',
   'tab.ai': 'كشف الذكاء الاصطناعي',

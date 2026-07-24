@@ -25,7 +25,7 @@ export function buildTabs() {
   /** @type {Record<string, HTMLElement>} */
   const panelMap = {};
 
-  const navEl = el('nav', { class: 'tabs', role: 'tablist', 'aria-label': 'analysis sections' });
+  const navEl = el('nav', { class: 'tabs', role: 'tablist', 'aria-label': t('aria.tabs') });
   const panelsEl = el('div', { class: 'tab-panels' });
 
   for (const key of TAB_KEYS) {
@@ -81,7 +81,12 @@ export function buildTabs() {
     const active = navEl.querySelector('.tab-btn.active');
     if (!active) return;
     const idx = TAB_KEYS.indexOf(active.getAttribute('data-tab') ?? '');
-    const dir = ke.key === 'ArrowRight' ? 1 : -1;
+    // Tabs are laid out in writing order, so under RTL the visually-next tab is
+    // to the LEFT. Flip the arrow mapping so the key always moves the direction
+    // the user sees, not the direction of the DOM order.
+    const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+    const forward = isRtl ? ke.key === 'ArrowLeft' : ke.key === 'ArrowRight';
+    const dir = forward ? 1 : -1;
     const next = TAB_KEYS[(idx + dir + TAB_KEYS.length) % TAB_KEYS.length];
     setActive(next);
     buttons[next].focus();

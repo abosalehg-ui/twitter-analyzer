@@ -24,11 +24,26 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      # Anything that reaches a user's browser must be clean — this gate blocks
+      # the deploy. The project currently ships zero runtime dependencies, so
+      # this passes trivially today and only starts mattering if one is added.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+
+      # Build/test tooling never reaches the browser, so an advisory here is
+      # reported for visibility but does not block publishing a static site.
+      - name: Audit dev dependencies (informational)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Lint
+        run: npm run lint
 
       - name: Run tests
         run: npm test

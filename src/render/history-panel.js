@@ -35,7 +35,7 @@ export function renderHistory(root, entries, handlers) {
       el('div', { class: 'history-actions' }, [
         el('button', { type: 'button', class: 'btn btn-secondary btn-xs', onclick: () => handlers.onLoad(e.id) }, t('history.load')),
         el('button', { type: 'button', class: 'btn btn-secondary btn-xs', onclick: () => handlers.onCompare(e.id) }, t('history.compareWithCurrent')),
-        el('button', { type: 'button', class: 'btn-icon', 'aria-label': 'delete', onclick: () => handlers.onDelete(e.id) }, t('btn.delete')),
+        el('button', { type: 'button', class: 'btn-icon', 'aria-label': t('aria.deleteEntry'), onclick: () => handlers.onDelete(e.id) }, t('btn.delete')),
       ]),
     ]);
   });
