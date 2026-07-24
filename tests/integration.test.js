@@ -17,6 +17,10 @@ describe('end-to-end DOM integration (single-tweet v3.0)', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    // jsdom does not implement window.confirm; destructive actions are gated on
+    // it, so default to "user accepted" and override per-test where the cancel
+    // path is what is under test.
+    window.confirm = () => true;
     const html = readFileSync(resolve(__dirname, '../index.html'), 'utf-8');
     document.documentElement.innerHTML = html.replace(
       /<!DOCTYPE[^>]*>|<html[^>]*>|<\/html>/g,
@@ -115,6 +119,84 @@ describe('end-to-end DOM integration (single-tweet v3.0)', () => {
     expect(() =>
       /** @type {HTMLButtonElement} */ (document.getElementById('exportJsonBtn')).click()
     ).not.toThrow();
+  });
+
+  it('keeps text when the clear confirmation is declined', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'text I did not mean to lose';
+    textarea.dispatchEvent(new Event('input'));
+
+    window.confirm = () => false;
+    /** @type {HTMLButtonElement} */ (document.getElementById('clearBtn')).click();
+
+    expect(textarea.value).toBe('text I did not mean to lose');
+  });
+
+  it('does not prompt when clearing an already-empty composer', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = '';
+    textarea.dispatchEvent(new Event('input'));
+
+    let prompted = false;
+    window.confirm = () => {
+      prompted = true;
+      return true;
+    };
+    /** @type {HTMLButtonElement} */ (document.getElementById('clearBtn')).click();
+
+    expect(prompted).toBe(false);
+  });
+
+  it('keeps history when the clear-history confirmation is declined', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'entry that should survive';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+    /** @type {HTMLButtonElement} */ (document.getElementById('saveHistoryBtn')).click();
+
+    window.confirm = () => false;
+    const clearAll = /** @type {HTMLButtonElement} */ (
+      document.querySelector('.history-toolbar .btn')
+    );
+    clearAll.click();
+
+    const raw = localStorage.getItem('twitter-analyzer:history');
+    expect(JSON.parse(/** @type {string} */ (raw)).length).toBe(1);
+  });
+
+  it('clearing also tears down an open compare composer', () => {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'first tweet';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+    /** @type {HTMLButtonElement} */ (document.getElementById('compareBtn')).click();
+    expect(document.getElementById('tweetCompare')).not.toBeNull();
+
+    /** @type {HTMLButtonElement} */ (document.getElementById('clearBtn')).click();
+
+    expect(document.getElementById('compareHost')?.hidden).toBe(true);
+    expect(document.getElementById('tweetCompare')).toBeNull();
+  });
+
+  it('compare button is visible but disabled until an analysis exists', () => {
+    const cmpBtn = /** @type {HTMLButtonElement} */ (document.getElementById('compareBtn'));
+    expect(cmpBtn.hidden).toBe(false);
+    expect(cmpBtn.disabled).toBe(true);
+
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = 'now there is an analysis to compare against';
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    expect(cmpBtn.disabled).toBe(false);
+  });
+
+  it('localizes aria-labels when the language is switched', () => {
+    const themeBtn = /** @type {HTMLElement} */ (document.getElementById('themeBtn'));
+    expect(themeBtn.getAttribute('aria-label')).toBe('تبديل المظهر بين الفاتح والداكن');
+
+    /** @type {HTMLButtonElement} */ (document.getElementById('langBtn')).click();
+    expect(themeBtn.getAttribute('aria-label')).toBe('Toggle between light and dark theme');
   });
 
   it('toggles compare composer on compare button click', () => {

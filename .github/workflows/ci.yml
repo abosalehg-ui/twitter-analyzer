@@ -1,0 +1,53 @@
+name: CI
+
+# Validates changes BEFORE they reach main. deploy.yml runs the same gates, but
+# only on push to main — by then a failure has already been merged.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A new push to a PR makes the in-flight run obsolete; cancel it.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Anything that reaches a user's browser must be clean. The project ships
+      # zero runtime dependencies today, so this passes trivially and only
+      # starts mattering if one is ever added.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+
+      # Build/test tooling never reaches the browser — reported, not blocking.
+      - name: Audit dev dependencies (informational)
+        run: npm audit --audit-level=high
+        continue-on-error: true

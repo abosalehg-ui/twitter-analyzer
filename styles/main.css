@@ -77,13 +77,21 @@ html {
 }
 
 body {
+  /* System-font stack only — the app ships no webfont, so every family listed
+     here must be one the OS can actually provide. Arabic-capable faces come
+     after the Latin ones; font fallback is per-glyph, so mixed AR/EN text
+     resolves correctly. */
   font-family:
-    'IBM Plex Sans Arabic',
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
     Roboto,
-    Inter,
+    'Helvetica Neue',
+    'Segoe UI Arabic',
+    'Noto Sans Arabic',
+    'Geeza Pro',
+    Tahoma,
+    Arial,
     sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
@@ -100,7 +108,8 @@ body {
   max-width: var(--container-max);
   margin: 0 auto;
   padding: clamp(12px, 3vw, 24px);
-  padding-bottom: 120px; /* room for sticky mobile bar */
+  /* Enough clearance for the fixed toast host at the bottom of the viewport. */
+  padding-bottom: clamp(32px, 8vw, 56px);
 }
 
 .app-header {
@@ -192,6 +201,21 @@ body {
 .btn:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Actions that are not available yet stay visible (so they are discoverable)
+   but clearly inert until their precondition is met. */
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover,
+.btn[disabled]:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  transform: none;
 }
 
 .btn-primary {

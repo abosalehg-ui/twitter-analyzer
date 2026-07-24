@@ -48,16 +48,3 @@ export function classify(score) {
   if (score < 0) return 'negative';
   return 'neutral';
 }
-
-/**
- * Aggregate sentiment counts across many tweets.
- * @param {string[]} tweets
- * @returns {{ positive: number, neutral: number, negative: number }}
- */
-export function aggregateSentiment(tweets) {
-  const totals = { positive: 0, neutral: 0, negative: 0 };
-  for (const tweet of tweets) {
-    totals[classify(scoreTweet(tweet))]++;
-  }
-  return totals;
-}

@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#1d1d1f" />
+    <!--
+      Defense in depth. The app is fully client-side and renders every piece of user
+      input through textContent, so there is no known injection point today — this
+      just makes sure a future regression cannot load or exfiltrate anything.
+      'unsafe-inline' is required for style-src only: the build injects CSS at runtime
+      and the renderer sets element styles directly. script-src stays strict.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
     <title>محلّل التغريدات الذكي</title>
     <link rel="stylesheet" href="./styles/main.css" />
   </head>
@@ -18,16 +30,22 @@
           </div>
         </div>
         <div class="header-actions">
+          <!-- aria-labels are replaced with localized text by applyLocale() on boot -->
           <button
             type="button"
             id="themeBtn"
             class="btn-icon"
-            aria-label="Toggle theme"
-            title="Toggle theme"
+            aria-label="تبديل المظهر بين الفاتح والداكن"
+            title="تبديل المظهر بين الفاتح والداكن"
           >
             🌓
           </button>
-          <button type="button" id="langBtn" class="btn-icon-text" aria-label="Switch language">
+          <button
+            type="button"
+            id="langBtn"
+            class="btn-icon-text"
+            aria-label="تبديل اللغة إلى الإنجليزية"
+          >
             EN
           </button>
         </div>
@@ -40,7 +58,7 @@
           <div class="action-row">
             <button class="btn btn-primary" id="analyzeBtn" type="button">🔍 حلّل التغريدة</button>
             <button class="btn btn-secondary" id="clearBtn" type="button">🗑️ مسح</button>
-            <button class="btn btn-secondary" id="compareBtn" type="button" hidden>
+            <button class="btn btn-secondary" id="compareBtn" type="button" disabled>
               ⚔️ قارن مع تغريدة أخرى
             </button>
           </div>

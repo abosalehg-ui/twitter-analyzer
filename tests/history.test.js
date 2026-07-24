@@ -84,4 +84,34 @@ describe('history storage', () => {
     localStorage.setItem('twitter-analyzer:history', 'not-valid-json');
     expect(loadHistory()).toEqual([]);
   });
+
+  it('drops malformed entries instead of surfacing them to the renderer', () => {
+    localStorage.setItem(
+      'twitter-analyzer:history',
+      JSON.stringify([
+        { id: 'ok', text: 'valid entry', aiScore: 10, algorithmScore: 20, length: 11 },
+        { id: 'no-text' },
+        { text: 'no id' },
+        null,
+        'a bare string',
+        42,
+      ])
+    );
+    const loaded = loadHistory();
+    expect(loaded.length).toBe(1);
+    expect(loaded[0].id).toBe('ok');
+  });
+
+  it('fills safe defaults for missing fields on an otherwise valid entry', () => {
+    localStorage.setItem(
+      'twitter-analyzer:history',
+      JSON.stringify([{ id: 'partial', text: 'hello' }])
+    );
+    const [entry] = loadHistory();
+    expect(entry.aiScore).toBe(0);
+    expect(entry.algorithmScore).toBe(0);
+    expect(entry.primaryTone).toBe('neutral');
+    expect(entry.length).toBe('hello'.length);
+    expect(typeof entry.analyzedAt).toBe('string');
+  });
 });

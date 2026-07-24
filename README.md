@@ -2,11 +2,11 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.0.0-cd7f32)
+![Version](https://img.shields.io/badge/version-3.0.1-cd7f32)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Language](https://img.shields.io/badge/language-Arabic%20%2F%20English-green)
 ![Platform](https://img.shields.io/badge/platform-Web-orange)
-![Tests](https://img.shields.io/badge/tests-128%20passing-2da44e)
+![Tests](https://img.shields.io/badge/tests-127%20passing-2da44e)
 
 **تحليل عميق لتغريدة واحدة: كشف الذكاء الاصطناعي، توافقية خوارزمية X، وتوصيات للتحسين**
 
@@ -141,7 +141,7 @@ Final Score = Σ (weight_i × P(action_i))
 - ✅ **Client-side بالكامل**: لا خادم، لا API، لا تتبّع، لا كوكيز
 - ✅ **localStorage محلي فقط**: المسودة + السجل + التفضيلات كلها على جهازك
 - ✅ **XSS-hardened**: كل بيانات المستخدم تُعرض عبر `textContent` — لا `innerHTML`
-- ✅ **128 اختبار** بما فيها حارس XSS صريح
+- ✅ **127 اختبار** بما فيها حارس XSS صريح
 - ✅ **مفتوح المصدر** بالكامل تحت رخصة MIT
 
 ---
@@ -182,7 +182,7 @@ src/
 │   ├── readability.js           ← مؤشر LIX المعدّل
 │   ├── tone-detector.js         ← 6 نبرات
 │   ├── single-tweet.js          ← orchestrator
-│   ├── sentiment.js / extractors.js / tokenize.js / stats.js
+│   ├── sentiment.js / extractors.js / tokenize.js
 │   └── index.js
 ├── data/
 │   ├── ai-cliches.js            ← قاموس عبارات LLM
@@ -212,7 +212,7 @@ src/
 | `npm run dev` | Vite dev server (HMR) |
 | `npm run build` | بناء إنتاجي إلى `dist/` |
 | `npm run preview` | معاينة `dist/` |
-| `npm test` | 128 اختبار (vitest + jsdom) |
+| `npm test` | 127 اختبار (vitest + jsdom) |
 | `npm run test:watch` | watch mode |
 | `npm run test:coverage` | تقرير تغطية |
 | `npm run lint` | ESLint |
@@ -225,7 +225,7 @@ src/
 2. يبني عبر Vite
 3. ينشر `dist/` إلى GitHub Pages تلقائياً
 
-### الاختبارات (128 ✅)
+### الاختبارات (127 ✅)
 
 | ملف | محتوى |
 |---|---|
@@ -236,7 +236,7 @@ src/
 | `history.test.js` | dedup + cap 20 + persistence |
 | `integration.test.js` | 11 سيناريو نهاية-إلى-نهاية في الـ DOM |
 | `exports.test.js` | TXT/CSV/JSON v3 |
-| + `dom`, `extractors`, `sentiment`, `stats`, `storage`, `tokenize` |
+| + `dom`, `tabs`, `extractors`, `sentiment`, `storage`, `tokenize` |
 
 ---
 
@@ -251,19 +251,19 @@ src/
 
 ### Dev tooling (لا يُشحَن للمتصفح)
 
-- **Vite 5** — dev server + production build
-- **Vitest 2 + jsdom 25** — 128 اختبار
-- **ESLint 9** + **Prettier 3**
+- **Vite 8** — dev server + production build
+- **Vitest 4 + jsdom 29** — 127 اختبار
+- **ESLint 10** + **Prettier 3**
 
 ### الحجم
 
 ```
-dist/index.html                  3.07 kB │ gzip:  1.10 kB
-dist/assets/index-xxx.css       17.07 kB │ gzip:  3.81 kB
-dist/assets/index-xxx.js        62.22 kB │ gzip: 22.45 kB
+dist/index.html                  4.24 kB │ gzip:  1.57 kB
+dist/assets/index-xxx.css       17.16 kB │ gzip:  3.83 kB
+dist/assets/index-xxx.js        68.02 kB │ gzip: 22.79 kB
 ```
 
-**~27 KB gzipped** يصل للمتصفح. صفر runtime dependencies.
+**~28 KB gzipped** يصل للمتصفح. صفر runtime dependencies.
 
 ---
 
@@ -277,7 +277,21 @@ dist/assets/index-xxx.js        62.22 kB │ gzip: 22.45 kB
 
 ## 🔄 سجل التحديثات
 
-### v3.0.0 (2026-05) — الإصدار الحالي
+### v3.0.1 (2026-07) — الإصدار الحالي
+إصدار صيانة: إصلاحات جودة وأمان بعد مراجعة شاملة للشيفرة.
+- 🔐 ترقية أدوات التطوير (Vite 8، Vitest 4، ESLint 10، jsdom 29) → **صفر ثغرات** في `npm audit`
+- 🔐 إضافة `Content-Security-Policy` و`referrer` meta كتحصين دفاعي
+- 🔐 تحصين قراءة السجل من `localStorage` ضد البيانات التالفة
+- 🌍 إصلاح اتجاه أسهم لوحة المفاتيح في التبويبات تحت RTL
+- ♿ تعريب كل `aria-label` (كانت ثابتة بالإنجليزية)
+- ⚠️ إضافة تأكيد قبل مسح التغريدة أو حذف السجل
+- 🧹 حذف كود v2 الميت (`stats.js`, `aggregateSentiment`)
+- 📊 تصحيح نطاق تقرير التغطية ليشمل `src/**` كاملاً
+- 🎨 إصلاح مكدّس الخطوط (إزالة خط غير مُحمَّل) وحشو سفلي ميت
+- 🎛️ زر المقارنة يظهر معطّلاً بدل إخفائه (اكتشاف أفضل)
+- 📄 إضافة ملف `LICENSE`
+
+### v3.0.0 (2026-05)
 - 🤖 إضافة كشف الذكاء الاصطناعي (9 إشارات)
 - 🐦 إضافة توافقية خوارزمية xai-org (15 احتمال تفاعل)
 - 🪄 إضافة مُحسِّن إعادة الصياغة
@@ -463,7 +477,7 @@ After analyzing a tweet, click "⚔️ Compare with another tweet" → opens a s
 - ✅ **Fully client-side**: no server, no API, no tracking, no cookies
 - ✅ **localStorage stays local**: draft, history, and preferences live on your device only
 - ✅ **XSS-hardened**: all user input rendered via `textContent` — no `innerHTML`
-- ✅ **128 tests** including an explicit XSS guard
+- ✅ **127 tests** including an explicit XSS guard
 - ✅ **Fully open source** under MIT license
 
 ---
@@ -502,7 +516,7 @@ See the [Arabic section](#arabic) above for the full file tree, npm scripts, dep
 | `npm run dev` | Vite dev server with HMR |
 | `npm run build` | production build to `dist/` |
 | `npm run preview` | preview `dist/` |
-| `npm test` | 128 tests (vitest + jsdom) |
+| `npm test` | 127 tests (vitest + jsdom) |
 | `npm run test:watch` | watch mode |
 | `npm run test:coverage` | coverage report |
 | `npm run lint` | ESLint |
@@ -511,12 +525,12 @@ See the [Arabic section](#arabic) above for the full file tree, npm scripts, dep
 ### Bundle size
 
 ```
-dist/index.html                  3.07 kB │ gzip:  1.10 kB
-dist/assets/index-xxx.css       17.07 kB │ gzip:  3.81 kB
-dist/assets/index-xxx.js        62.22 kB │ gzip: 22.45 kB
+dist/index.html                  4.24 kB │ gzip:  1.57 kB
+dist/assets/index-xxx.css       17.16 kB │ gzip:  3.83 kB
+dist/assets/index-xxx.js        68.02 kB │ gzip: 22.79 kB
 ```
 
-**~27 KB gzipped** reaches the browser. Zero runtime dependencies.
+**~28 KB gzipped** reaches the browser. Zero runtime dependencies.
 
 ---
 
@@ -524,7 +538,7 @@ dist/assets/index-xxx.js        62.22 kB │ gzip: 22.45 kB
 
 **Runtime** (ships to browser): HTML5 + ARIA, CSS3 (Grid/Flexbox/clamp/custom properties), vanilla ES modules, SVG + Canvas 2D.
 
-**Dev tooling** (build-only): Vite 5, Vitest 2 + jsdom 25, ESLint 9, Prettier 3.
+**Dev tooling** (build-only): Vite 8, Vitest 4 + jsdom 29, ESLint 10, Prettier 3.
 
 ---
 
@@ -538,7 +552,21 @@ dist/assets/index-xxx.js        62.22 kB │ gzip: 22.45 kB
 
 ## 🔄 Changelog
 
-### v3.0.0 (2026-05) — current
+### v3.0.1 (2026-07) — current
+Maintenance release: quality and security fixes following a full code review.
+- 🔐 Upgraded dev tooling (Vite 8, Vitest 4, ESLint 10, jsdom 29) → **zero** `npm audit` vulnerabilities
+- 🔐 Added `Content-Security-Policy` + `referrer` meta as defense in depth
+- 🔐 Hardened history loading against corrupted `localStorage` data
+- 🌍 Fixed tab arrow-key direction under RTL
+- ♿ Localized every `aria-label` (previously hardcoded English)
+- ⚠️ Added confirmation before clearing the composer or deleting history
+- 🧹 Removed dead v2 code (`stats.js`, `aggregateSentiment`)
+- 📊 Corrected coverage scope to report on all of `src/**`
+- 🎨 Fixed the font stack (dropped an unloaded family) and dead bottom padding
+- 🎛️ Compare button now renders disabled instead of hidden (discoverability)
+- 📄 Added the missing `LICENSE` file
+
+### v3.0.0 (2026-05)
 - 🤖 Added AI detection (9 signals)
 - 🐦 Added xai-org algorithm fit (15 actions)
 - 🪄 Added rewrite optimizer

@@ -32,6 +32,17 @@ export const en = {
   'btn.clearHistory': 'Clear history',
   'btn.toggleTheme': '🌓',
 
+  // Accessibility labels (screen readers)
+  'aria.themeToggle': 'Toggle between light and dark theme',
+  'aria.langSwitch': 'Switch language to Arabic',
+  'aria.tabs': 'Analysis sections',
+  'aria.deleteEntry': 'Delete this analysis from history',
+
+  // Confirmations (destructive actions)
+  'confirm.clearInput': 'This will clear the current tweet text. Continue?',
+  'confirm.clearHistory': 'This will permanently delete every saved analysis in your history. Continue?',
+  'confirm.deleteEntry': 'This will delete this analysis from your history. Continue?',
+
   // Tabs
   'tab.overview': 'Overview',
   'tab.ai': 'AI Detection',

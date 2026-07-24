@@ -15,7 +15,36 @@ const MAX_ITEMS = 20;
  */
 
 /**
- * Load full history (newest first).
+ * Validate and coerce one raw entry from storage.
+ *
+ * localStorage is user-writable (DevTools, browser extensions, an older schema
+ * left behind by a previous version), so entries are treated as untrusted input:
+ * anything without a usable `id`/`text` is dropped, and the numeric/label fields
+ * fall back to safe defaults rather than reaching the renderer as undefined.
+ *
+ * @param {unknown} raw
+ * @returns {HistoryEntry | null}
+ */
+function normalizeEntry(raw) {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const e = /** @type {Record<string, unknown>} */ (raw);
+  if (typeof e.id !== 'string' || typeof e.text !== 'string') return null;
+
+  const num = (v, fallback = 0) => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
+
+  return {
+    id: e.id,
+    text: e.text,
+    analyzedAt: typeof e.analyzedAt === 'string' ? e.analyzedAt : '',
+    aiScore: num(e.aiScore),
+    algorithmScore: num(e.algorithmScore),
+    primaryTone: typeof e.primaryTone === 'string' ? e.primaryTone : 'neutral',
+    length: num(e.length, e.text.length),
+  };
+}
+
+/**
+ * Load full history (newest first). Malformed entries are skipped.
  * @returns {HistoryEntry[]}
  */
 export function loadHistory() {
@@ -23,7 +52,8 @@ export function loadHistory() {
     const raw = localStorage.getItem(HISTORY_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return /** @type {HistoryEntry[]} */ (parsed.map(normalizeEntry).filter(Boolean));
   } catch {
     return [];
   }

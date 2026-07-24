@@ -36,6 +36,18 @@ import { t, setLocale, getLocale } from './i18n/index.js';
 
 const $ = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
 
+/**
+ * Ask the user to confirm a destructive action.
+ * Falls back to "allowed" in environments without a dialog implementation
+ * so the app never becomes unusable where `confirm` is missing.
+ * @param {string} messageKey i18n key for the prompt
+ * @returns {boolean}
+ */
+function confirmAction(messageKey) {
+  if (typeof window === 'undefined' || typeof window.confirm !== 'function') return true;
+  return window.confirm(t(messageKey));
+}
+
 const state = {
   /** @type {AnalysisResult | null} */
   current: null,
@@ -80,7 +92,17 @@ function applyLocale() {
   setBtn('saveHistoryBtn', 'btn.saveHistory');
 
   const langBtn = $('langBtn');
-  if (langBtn) langBtn.textContent = t('app.langSwitch');
+  if (langBtn) {
+    langBtn.textContent = t('app.langSwitch');
+    langBtn.setAttribute('aria-label', t('aria.langSwitch'));
+  }
+
+  // Screen-reader labels follow the active locale like every other string.
+  const themeBtn = $('themeBtn');
+  if (themeBtn) {
+    themeBtn.setAttribute('aria-label', t('aria.themeToggle'));
+    themeBtn.setAttribute('title', t('aria.themeToggle'));
+  }
 
   const historyHeading = $('historyHeading');
   if (historyHeading) historyHeading.textContent = t('history.title');
@@ -175,10 +197,9 @@ function runAnalysis() {
   }
   state.current = analyzeTweet(text);
 
-  // Show results + compare button
+  // Show results + enable the compare action (visible but inert before analysis)
   $('results').classList.add('show');
-  const cmpBtn = $('compareBtn');
-  cmpBtn.hidden = false;
+  /** @type {HTMLButtonElement} */ ($('compareBtn')).disabled = false;
 
   renderAll(state.current);
 
@@ -232,16 +253,23 @@ function renderComparisonView() {
 //  Compare mode
 // ====================================================================
 
+/**
+ * Tear down compare mode completely: second composer, its analysis, and the
+ * side-by-side view. Safe to call when compare mode is not active.
+ */
+function resetCompareMode() {
+  state.compareComposer = null;
+  state.compareWith = null;
+  const cmpHost = /** @type {HTMLElement} */ ($('compareHost'));
+  cmpHost.hidden = true;
+  cmpHost.replaceChildren();
+  $('comparisonView').hidden = true;
+  $('compareBtn').textContent = t('btn.compare');
+}
+
 function toggleCompareMode() {
   if (state.compareComposer) {
-    // Cancel
-    state.compareComposer = null;
-    state.compareWith = null;
-    const cmpHost = /** @type {HTMLElement} */ ($('compareHost'));
-    cmpHost.hidden = true;
-    cmpHost.replaceChildren();
-    $('comparisonView').hidden = true;
-    $('compareBtn').textContent = t('btn.compare');
+    resetCompareMode();
     return;
   }
 
@@ -264,14 +292,19 @@ function toggleCompareMode() {
 
 function runClear() {
   if (!state.primaryComposer) return;
+  // Only interrupt the user when there is actually something to lose.
+  const hasContent = state.primaryComposer.textarea.value.trim().length > 0;
+  if (hasContent && !confirmAction('confirm.clearInput')) return;
+
   state.primaryComposer.textarea.value = '';
   state.primaryComposer.textarea.dispatchEvent(new Event('input'));
   clearInput();
   state.current = null;
-  state.compareWith = null;
+  // Also drop compare mode — otherwise the second composer is left on screen
+  // with no way to dismiss it once the compare button goes inert.
+  resetCompareMode();
   $('results').classList.remove('show');
-  $('comparisonView').hidden = true;
-  $('compareBtn').hidden = true;
+  /** @type {HTMLButtonElement} */ ($('compareBtn')).disabled = true;
   toast(t('status.cleared'), 'info');
 }
 
@@ -337,10 +370,12 @@ function renderHistoryList() {
       renderComparisonView();
     },
     onDelete: (id) => {
+      if (!confirmAction('confirm.deleteEntry')) return;
       removeFromHistory(id);
       renderHistoryList();
     },
     onClearAll: () => {
+      if (!confirmAction('confirm.clearHistory')) return;
       clearHistory();
       renderHistoryList();
       toast(t('status.historyCleared'), 'info');

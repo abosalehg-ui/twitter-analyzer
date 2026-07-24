@@ -19,7 +19,9 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: 'v8',
-      include: ['src/analysis/**', 'src/render/**', 'src/export/**'],
+      // Cover everything that ships. Narrowing this to a subset of directories
+      // makes the reported percentage look better than the real one.
+      include: ['src/**'],
     },
   },
 });

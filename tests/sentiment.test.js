@@ -1,7 +1,7 @@
 // @ts-check
 
 import { describe, it, expect } from 'vitest';
-import { scoreTweet, classify, aggregateSentiment } from '../src/analysis/sentiment.js';
+import { scoreTweet, classify } from '../src/analysis/sentiment.js';
 
 describe('scoreTweet', () => {
   it('scores positive words positively', () => {
@@ -54,25 +54,5 @@ describe('classify', () => {
   });
   it('maps zero to neutral', () => {
     expect(classify(0)).toBe('neutral');
-  });
-});
-
-describe('aggregateSentiment', () => {
-  it('counts each tweet into one bucket', () => {
-    const tweets = ['amazing day 😊', 'terrible loss', 'just a tweet'];
-    const result = aggregateSentiment(tweets);
-    expect(result.positive).toBe(1);
-    expect(result.negative).toBe(1);
-    expect(result.neutral).toBe(1);
-  });
-
-  it('handles empty array', () => {
-    expect(aggregateSentiment([])).toEqual({ positive: 0, neutral: 0, negative: 0 });
-  });
-
-  it('sums to total tweets', () => {
-    const tweets = ['great', 'bad', 'meh', 'love', 'hate'];
-    const result = aggregateSentiment(tweets);
-    expect(result.positive + result.negative + result.neutral).toBe(tweets.length);
   });
 });
