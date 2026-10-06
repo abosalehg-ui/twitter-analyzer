@@ -2,13 +2,23 @@
 
 import { el, replaceChildren } from './dom.js';
 import { t } from '../i18n/index.js';
+import { extractLinks } from '../analysis/extractors.js';
 
 /**
  * @typedef {import('../analysis/index.js').AnalysisResult} AnalysisResult
  */
 
+// Theme tokens from main.css. Colors go through `style`, not presentation
+// attributes: var() only resolves in CSS, and hardcoded hex ignored the light theme.
+const COLOR = {
+  accent: 'var(--accent)',
+  success: 'var(--success)',
+  warning: 'var(--warning)',
+  danger: 'var(--danger)',
+};
+
 /** Generic gauge meter (semi-circular arc + number). */
-function gaugeMeter(value, label, max = 100, color = '#cd7f32') {
+function gaugeMeter(value, label, max = 100, color = COLOR.accent) {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('viewBox', '0 0 200 110');
@@ -20,7 +30,7 @@ function gaugeMeter(value, label, max = 100, color = '#cd7f32') {
   const bg = document.createElementNS(ns, 'path');
   bg.setAttribute('d', 'M 10 100 A 90 90 0 0 1 190 100');
   bg.setAttribute('fill', 'none');
-  bg.setAttribute('stroke', '#3a3a3c');
+  bg.setAttribute('class', 'gauge-track');
   bg.setAttribute('stroke-width', '14');
   bg.setAttribute('stroke-linecap', 'round');
   svg.appendChild(bg);
@@ -29,7 +39,7 @@ function gaugeMeter(value, label, max = 100, color = '#cd7f32') {
   const fg = document.createElementNS(ns, 'path');
   fg.setAttribute('d', 'M 10 100 A 90 90 0 0 1 190 100');
   fg.setAttribute('fill', 'none');
-  fg.setAttribute('stroke', color);
+  fg.style.stroke = color;
   fg.setAttribute('stroke-width', '14');
   fg.setAttribute('stroke-linecap', 'round');
   fg.setAttribute('pathLength', '100');
@@ -41,7 +51,8 @@ function gaugeMeter(value, label, max = 100, color = '#cd7f32') {
   num.setAttribute('x', '100');
   num.setAttribute('y', '85');
   num.setAttribute('text-anchor', 'middle');
-  num.setAttribute('fill', '#f5f5f5');
+  // currentColor follows .gauge-svg { color: var(--text-primary) } in both themes
+  num.setAttribute('fill', 'currentColor');
   num.setAttribute('font-weight', '700');
   num.setAttribute('font-size', '32');
   num.textContent = String(value);
@@ -51,13 +62,43 @@ function gaugeMeter(value, label, max = 100, color = '#cd7f32') {
 }
 
 /** Tiny horizontal bar for a signal/contribution row. */
-function rowBar(percent, color = '#cd7f32') {
+function rowBar(percent, color = COLOR.accent) {
   return el('div', { class: 'rowbar' }, [
     el('div', {
       class: 'rowbar-fill',
       style: { width: Math.max(0, Math.min(100, percent)) + '%', background: color },
     }),
   ]);
+}
+
+/**
+ * One labelled bar row: label · bar · value. Shared by the AI, algorithm and
+ * engagement panels.
+ * @param {string} label
+ * @param {number} percent 0..100
+ * @param {string} color
+ * @param {string} valueText
+ */
+function signalRow(label, percent, color, valueText) {
+  return el('div', { class: 'signal-row' }, [
+    el('div', { class: 'signal-label' }, label),
+    rowBar(percent, color),
+    el('div', { class: 'signal-value' }, valueText),
+  ]);
+}
+
+/**
+ * Row for one predicted engagement action.
+ * @param {import('../analysis/algorithm-score.js').ActionContribution} c
+ * @param {string} color
+ */
+function actionRow(c, color) {
+  return signalRow(
+    t('action.' + c.action),
+    c.probability * 100,
+    color,
+    `${(c.probability * 100).toFixed(0)}%`
+  );
 }
 
 // ====================================================================
@@ -72,7 +113,7 @@ export function renderOverview(root, data) {
     [t('overview.hashtags'), String(data.hashtags.length)],
     [t('overview.mentions'), String(data.mentions.length)],
     [t('overview.emojis'), String(data.emojis.length)],
-    [t('overview.links'), String((data.text.match(/https?:\/\/\S+/g) || []).length)],
+    [t('overview.links'), String(extractLinks(data.text).length)],
   ];
 
   const statGrid = el(
@@ -112,7 +153,7 @@ export function renderOverview(root, data) {
       el('div', { class: 'gauge-label' }, t('algo.score')),
     ]),
     el('div', { class: 'gauge gauge-read' }, [
-      gaugeMeter(data.readability.score, t('read.title'), 100, '#cd7f32'),
+      gaugeMeter(data.readability.score, t('read.title'), 100, COLOR.accent),
       el('div', { class: 'gauge-label' }, t('read.title')),
     ]),
   ]);
@@ -121,14 +162,14 @@ export function renderOverview(root, data) {
 }
 
 function aiColor(score) {
-  if (score >= 70) return '#cf222e';
-  if (score >= 40) return '#9a6700';
-  return '#2da44e';
+  if (score >= 70) return COLOR.danger;
+  if (score >= 40) return COLOR.warning;
+  return COLOR.success;
 }
 function algoColor(score) {
-  if (score >= 70) return '#2da44e';
-  if (score >= 45) return '#cd7f32';
-  return '#cf222e';
+  if (score >= 70) return COLOR.success;
+  if (score >= 45) return COLOR.accent;
+  return COLOR.danger;
 }
 
 // ====================================================================
@@ -157,11 +198,12 @@ export function renderAi(root, data) {
   ]);
 
   const signalRows = ai.signals.map((s) =>
-    el('div', { class: 'signal-row' }, [
-      el('div', { class: 'signal-label' }, t('ai.signal.' + s.key)),
-      rowBar(s.raw * 100, aiColor(s.raw * 100)),
-      el('div', { class: 'signal-value' }, `${Math.round(s.raw * 100)}/100`),
-    ])
+    signalRow(
+      t('ai.signal.' + s.key),
+      s.raw * 100,
+      aiColor(s.raw * 100),
+      `${Math.round(s.raw * 100)}/100`
+    )
   );
 
   /** @type {Array<HTMLElement>} */
@@ -219,28 +261,12 @@ export function renderAlgorithm(root, data) {
   // Show top 5 positives and worst 3 negatives by abs contribution
   const positivesEl = el('div', { class: 'algo-block' }, [
     el('h4', {}, t('algo.positives')),
-    ...a.positives
-      .slice(0, 5)
-      .map((c) =>
-        el('div', { class: 'signal-row' }, [
-          el('div', { class: 'signal-label' }, t('action.' + c.action)),
-          rowBar(c.probability * 100, '#2da44e'),
-          el('div', { class: 'signal-value' }, `${(c.probability * 100).toFixed(0)}%`),
-        ])
-      ),
+    ...a.positives.slice(0, 5).map((c) => actionRow(c, COLOR.success)),
   ]);
 
   const negativesEl = el('div', { class: 'algo-block' }, [
     el('h4', {}, t('algo.negatives')),
-    ...a.negatives
-      .slice(0, 3)
-      .map((c) =>
-        el('div', { class: 'signal-row' }, [
-          el('div', { class: 'signal-label' }, t('action.' + c.action)),
-          rowBar(c.probability * 100, '#cf222e'),
-          el('div', { class: 'signal-value' }, `${(c.probability * 100).toFixed(0)}%`),
-        ])
-      ),
+    ...a.negatives.slice(0, 3).map((c) => actionRow(c, COLOR.danger)),
   ]);
 
   replaceChildren(root, [
@@ -260,21 +286,20 @@ export function renderEngagement(root, data) {
   const positives = data.algorithm.positives;
   const negatives = data.algorithm.negatives;
 
-  const buildRows = (items, color) =>
-    items.map((c) =>
-      el('div', { class: 'signal-row' }, [
-        el('div', { class: 'signal-label' }, t('action.' + c.action)),
-        rowBar(c.probability * 100, color),
-        el('div', { class: 'signal-value' }, `${(c.probability * 100).toFixed(0)}%`),
-      ])
-    );
-
   replaceChildren(root, [
     el('p', { class: 'panel-subtitle' }, t('engagement.subtitle')),
     el('h4', {}, t('engagement.positiveActions')),
-    el('div', { class: 'signal-list' }, buildRows(positives, '#2da44e')),
+    el(
+      'div',
+      { class: 'signal-list' },
+      positives.map((c) => actionRow(c, COLOR.success))
+    ),
     el('h4', {}, t('engagement.negativeActions')),
-    el('div', { class: 'signal-list' }, buildRows(negatives, '#cf222e')),
+    el(
+      'div',
+      { class: 'signal-list' },
+      negatives.map((c) => actionRow(c, COLOR.danger))
+    ),
   ]);
 }
 
@@ -397,7 +422,7 @@ export function renderTone(root, data) {
       ]),
       el('div', { class: 'kv' }, [
         el('span', {}, t('read.longRatio')),
-        el('strong', {}, `${Math.round(data.readability.longRatio * 100)}%`),
+        el('strong', {}, `${Math.round(data.readability.longWordRatio * 100)}%`),
       ]),
     ]),
   ]);

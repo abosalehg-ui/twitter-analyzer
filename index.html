@@ -66,8 +66,11 @@
           <div id="compareHost" class="compare-host" hidden></div>
         </section>
 
-        <section class="results" id="results" aria-live="polite">
-          <nav id="tabsNav" class="tabs-host" aria-label="analysis sections"></nav>
+        <!-- No aria-live here: every analysis rebuilds all 8 panels, which made screen
+             readers try to read the whole result. Status is announced by the toast host. -->
+        <section class="results" id="results">
+          <!-- Plain container: buildTabs() renders the labelled <nav role="tablist"> inside. -->
+          <div id="tabsNav" class="tabs-host"></div>
           <div id="tabsPanels" class="tabs-panels-host"></div>
 
           <div class="post-actions">

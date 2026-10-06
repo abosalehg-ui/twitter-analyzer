@@ -1,6 +1,7 @@
 // @ts-check
 
-import { normalizeArabic } from './tokenize.js';
+import { normalizeArabic } from './normalize.js';
+import { HASHTAG_RE, MENTION_RE, LINK_RE } from './extractors.js';
 
 /**
  * @typedef {Object} ReadabilityResult
@@ -23,10 +24,12 @@ import { normalizeArabic } from './tokenize.js';
  */
 export function readability(text) {
   const cleaned = normalizeArabic(text)
-    .replace(/https?:\/\/\S+/g, ' ')
-    .replace(/[#@]\S+/g, ' ');
+    .replace(LINK_RE, ' ')
+    .replace(HASHTAG_RE, ' ')
+    .replace(MENTION_RE, ' ');
 
-  const words = cleaned.match(/[\p{L}]+/gu) || [];
+  /** @type {string[]} */
+  const words = cleaned.match(/[\p{L}]+/gu) ?? [];
   const sentences = cleaned.split(/[.!?؟\n]+/).filter((s) => s.trim().length > 0);
   const sentenceCount = Math.max(1, sentences.length);
   const wordCount = words.length;

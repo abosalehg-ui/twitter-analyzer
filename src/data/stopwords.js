@@ -1,6 +1,9 @@
 // @ts-check
 
-export const STOP_WORDS = new Set([
+import { normSet } from '../analysis/normalize.js';
+
+// Normalized at load time so entries like 'إلى' match the token 'الي'.
+export const STOP_WORDS = normSet([
   // Arabic stop words
   'في',
   'من',

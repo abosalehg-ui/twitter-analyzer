@@ -64,6 +64,8 @@ export const ar = {
   'status.cleared': '🗑️ تم المسح',
   'status.cardGenerated': '🖼️ تم توليد البطاقة',
   'status.historyCleared': '🗑️ تم مسح السجل',
+  'status.exportFailed': '⚠️ تعذّر إنشاء الملف، حاول مرة أخرى',
+  'status.compareHint': '✍️ اكتب التغريدة الثانية ثم اضغط «حلّل»',
 
   // Overview
   'overview.length': 'الطول',

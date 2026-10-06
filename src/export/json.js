@@ -25,5 +25,5 @@ export function buildJson(data) {
  */
 export function exportJson(data) {
   const filename = `${t('report.filename')}_${Date.now()}.json`;
-  downloadText(filename, buildJson(data));
+  downloadText(filename, buildJson(data), 'application/json');
 }

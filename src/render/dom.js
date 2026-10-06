@@ -13,7 +13,7 @@
  *
  * @param {string} tag
  * @param {Record<string, any>} [props]
- * @param {(string | Node | null | undefined) | Array<string | Node | null | undefined>} [children]
+ * @param {(string | Node | null | undefined | false) | Array<string | Node | null | undefined | false>} [children]
  * @returns {HTMLElement}
  */
 export function el(tag, props = {}, children = []) {

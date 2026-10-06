@@ -1,9 +1,12 @@
 // @ts-check
 
-// Words are stored lowercase and without diacritics — match keys returned by tokenize().
+import { normSet } from '../analysis/normalize.js';
+
+// Entries are written naturally (ة، أ، ى، tanween) and normalized at load time by
+// normSet(), so they compare equal to the keys tokenize() produces.
 // Emojis are matched separately via EMOJI_SENTIMENT.
 
-export const POSITIVE_WORDS = new Set([
+export const POSITIVE_WORDS = normSet([
   // Arabic
   'رائع',
   'جميل',
@@ -77,7 +80,7 @@ export const POSITIVE_WORDS = new Set([
   'inspiring',
 ]);
 
-export const NEGATIVE_WORDS = new Set([
+export const NEGATIVE_WORDS = normSet([
   // Arabic
   'سيء',
   'سيئة',
@@ -150,7 +153,7 @@ export const NEGATIVE_WORDS = new Set([
   'hurt',
 ]);
 
-export const INTENSIFIERS = new Set([
+export const INTENSIFIERS = normSet([
   'جدا',
   'جداً',
   'كثيرا',

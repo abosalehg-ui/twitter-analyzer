@@ -24,21 +24,40 @@ function isArabic(text) {
   return /[؀-ۿ]/.test(text);
 }
 
+// Filler words that can be dropped without changing what the tweet says.
+const FILLERS_EN = ['very', 'really', 'so', 'just', 'actually', 'basically', 'literally'];
+const FILLERS_AR = ['جدا', 'جداً', 'فعلا', 'فعلاً', 'حقا', 'حقاً', 'بصراحة', 'بصراحه', 'يعني'];
+
 /**
- * Shorter variant: trim to ~120 chars at word boundary.
+ * Build a whole-word matcher for Arabic or mixed text.
+ *
+ * `\b` cannot be used here: without the `u` flag (and even with it) JS treats
+ * Arabic letters as non-word characters, so `/\bسيء\b/` never matches anything.
+ * Letter-class lookarounds give a real word boundary for every script.
+ *
+ * @param {string} word
+ * @param {string} [flags='g']
+ */
+function wordRe(word, flags = 'g') {
+  return new RegExp(`(?<![\\p{L}\\p{M}])${word}(?![\\p{L}\\p{M}])`, flags + 'u');
+}
+
+const FILLER_RES = [...FILLERS_EN, ...FILLERS_AR].map((w) => wordRe(w, 'gi'));
+
+/**
+ * Shorter variant: drop filler words. The text is never truncated — cutting a
+ * tweet off at N characters deletes its ending, which is not a suggestion anyone
+ * can post. When there is no filler to remove, the result equals the input and
+ * suggestRewrites() skips it.
  * @param {string} text
  */
 function makeShorter(text) {
-  if (text.length <= 120) {
-    // Already short — try to remove filler instead
-    return text
-      .replace(/\b(very|really|so|just|actually|basically|literally)\s/gi, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-  const cut = text.slice(0, 120);
-  const lastSpace = cut.lastIndexOf(' ');
-  return (lastSpace > 80 ? cut.slice(0, lastSpace) : cut).trim() + '…';
+  let out = text;
+  for (const re of FILLER_RES) out = out.replace(re, '');
+  return out
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/ +([،,.!?؟])/g, '$1')
+    .trim();
 }
 
 /**
@@ -48,10 +67,8 @@ function makeShorter(text) {
 function makeQuestion(text) {
   if (/[?؟]\s*$/.test(text.trim())) return text;
   const suffix = isArabic(text) ? QUESTION_SUFFIX_AR : QUESTION_SUFFIX_EN;
-  // Avoid pushing past 280 chars
-  if (text.length + suffix.length > 280) {
-    return makeShorter(text) + suffix;
-  }
+  // Never push past 280 chars: the only fix would be truncating the tweet.
+  if (text.trim().length + suffix.length > 280) return text;
   return text.trim() + suffix;
 }
 
@@ -68,12 +85,14 @@ function makePositive(text) {
     [/\b(horrible)\b/gi, 'difficult'],
     [/\b(stupid)\b/gi, 'puzzling'],
     [/\b(worst)\b/gi, 'least favorable'],
-    [/\bسيء\b/g, 'صعب'],
-    [/\bسيئة\b/g, 'صعبة'],
-    [/\bسيئه\b/g, 'صعبه'],
-    [/\bأكره\b/g, 'لا أحبذ'],
-    [/\bاكره\b/g, 'لا احبذ'],
-    [/\bفظيع\b/g, 'صعب'],
+    [wordRe('سيء'), 'صعب'],
+    [wordRe('سيئ'), 'صعب'],
+    [wordRe('سيئة'), 'صعبة'],
+    [wordRe('سيئه'), 'صعبه'],
+    [wordRe('أكره'), 'لا أحبذ'],
+    [wordRe('اكره'), 'لا احبذ'],
+    [wordRe('فظيع'), 'صعب'],
+    [wordRe('فظيعة'), 'صعبة'],
   ];
   let out = text;
   for (const [re, rep] of replacements) {

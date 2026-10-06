@@ -1,24 +1,10 @@
 // @ts-check
 
 import { STOP_WORDS } from '../data/stopwords.js';
+import { normalizeArabic } from './normalize.js';
+import { HASHTAG_RE, MENTION_RE, LINK_RE } from './extractors.js';
 
-const ARABIC_DIACRITICS = /[ً-ْٰـ]/g;
-const ALEF_VARIANTS = /[آأإ]/g;
-const TAA_MARBUTA = /ة/g;
-const ALEF_MAKSURA = /ى/g;
-
-/**
- * Normalize Arabic text: strip diacritics, unify alef forms, taa marbuta, alef maksura.
- * @param {string} text
- * @returns {string}
- */
-export function normalizeArabic(text) {
-  return text
-    .replace(ARABIC_DIACRITICS, '')
-    .replace(ALEF_VARIANTS, 'ا')
-    .replace(TAA_MARBUTA, 'ه')
-    .replace(ALEF_MAKSURA, 'ي');
-}
+export { normalizeArabic } from './normalize.js';
 
 /**
  * Tokenize text into a list of normalized lowercase word tokens.
@@ -27,10 +13,7 @@ export function normalizeArabic(text) {
  * @returns {string[]}
  */
 export function tokenize(text) {
-  const cleaned = text
-    .replace(/https?:\/\/\S+/g, ' ')
-    .replace(/#[ء-يa-zA-Z0-9_]+/g, ' ')
-    .replace(/@[ء-يa-zA-Z0-9_]+/g, ' ');
+  const cleaned = text.replace(LINK_RE, ' ').replace(HASHTAG_RE, ' ').replace(MENTION_RE, ' ');
 
   const normalized = normalizeArabic(cleaned).toLowerCase();
   const matches = normalized.match(/[\p{L}]+/gu);

@@ -22,10 +22,11 @@ function buildCharCircle(count) {
   const ratio = Math.min(count / MAX, 1);
   const dash = ratio * circumference;
 
-  let color = '#cd7f32';
-  if (count > MAX) color = '#cf222e';
-  else if (count > WARN) color = '#9a6700';
-  else if (count >= SWEET_MIN && count <= SWEET_MAX) color = '#2da44e';
+  // Theme tokens; set through `style` because var() does not resolve in attributes.
+  let color = 'var(--accent)';
+  if (count > MAX) color = 'var(--danger)';
+  else if (count > WARN) color = 'var(--warning)';
+  else if (count >= SWEET_MIN && count <= SWEET_MAX) color = 'var(--success)';
 
   const root = document.createElementNS(ns, 'svg');
   root.setAttribute('width', String(size));
@@ -38,7 +39,7 @@ function buildCharCircle(count) {
   bg.setAttribute('cy', String(size / 2));
   bg.setAttribute('r', String(radius));
   bg.setAttribute('fill', 'none');
-  bg.setAttribute('stroke', '#3a3a3c');
+  bg.setAttribute('class', 'char-track');
   bg.setAttribute('stroke-width', String(stroke));
   root.appendChild(bg);
 
@@ -47,7 +48,7 @@ function buildCharCircle(count) {
   fg.setAttribute('cy', String(size / 2));
   fg.setAttribute('r', String(radius));
   fg.setAttribute('fill', 'none');
-  fg.setAttribute('stroke', color);
+  fg.style.stroke = color;
   fg.setAttribute('stroke-width', String(stroke));
   fg.setAttribute('stroke-linecap', 'round');
   fg.setAttribute('stroke-dasharray', `${dash} ${circumference - dash}`);
@@ -107,7 +108,8 @@ export function buildComposer(opts) {
       style: {
         // sweet spot zone 70-150 of 280
         // 70/280 = 25%; 150/280 ≈ 53.57%
-        left: (SWEET_MIN / MAX) * 100 + '%',
+        // Logical property: the bar fills from the side the text starts on (right in RTL).
+        insetInlineStart: (SWEET_MIN / MAX) * 100 + '%',
         width: ((SWEET_MAX - SWEET_MIN) / MAX) * 100 + '%',
       },
     }),

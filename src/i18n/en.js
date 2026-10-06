@@ -66,6 +66,8 @@ export const en = {
   'status.cleared': '🗑️ Cleared',
   'status.cardGenerated': '🖼️ Card generated',
   'status.historyCleared': '🗑️ History cleared',
+  'status.exportFailed': '⚠️ Could not create the file, please try again',
+  'status.compareHint': '✍️ Write the second tweet, then press Analyze',
 
   // Overview
   'overview.length': 'Length',

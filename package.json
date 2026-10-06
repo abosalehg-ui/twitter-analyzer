@@ -1,6 +1,6 @@
 {
   "name": "twitter-analyzer",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Client-side bilingual (Arabic/English) single-tweet analyzer with AI-detection and X-algorithm fit scoring",
   "type": "module",
   "scripts": {
@@ -11,16 +11,18 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src tests",
+    "typecheck": "tsc -p .",
     "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"styles/**/*.css\" \"*.html\"",
     "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"styles/**/*.css\" \"*.html\""
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.8.0",
     "jsdom": "^29.1.1",
     "prettier": "^3.9.6",
+    "typescript": "^5.9.3",
     "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "license": "MIT"
 }
