@@ -221,6 +221,101 @@ describe('end-to-end DOM integration (single-tweet v3.0)', () => {
     expect(parsed[0].text).toBe('memorable tweet to save');
   });
 
+  /** @param {string} text */
+  function analyze(text) {
+    const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweet'));
+    textarea.value = text;
+    textarea.dispatchEvent(new Event('input'));
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+  }
+
+  const lastToast = () => {
+    const all = document.querySelectorAll('.toast');
+    return /** @type {HTMLElement | undefined} */ (all[all.length - 1]);
+  };
+
+  it('never renders NaN in any panel', () => {
+    analyze('جملة عربية قصيرة للتجربة، وفيها كلمات طويلة نسبيًا مثل الاستراتيجيات');
+    expect(document.getElementById('tabsPanels')?.textContent).not.toContain('NaN');
+  });
+
+  it('gauge numbers follow the theme instead of a hardcoded light fill', () => {
+    analyze('Just shipped a new feature today! What do you think? 🚀');
+    const nums = document.querySelectorAll('.gauge-svg text');
+    expect(nums.length).toBeGreaterThan(0);
+    for (const n of nums) expect(n.getAttribute('fill')).toBe('currentColor');
+  });
+
+  it('links every tab to its panel for assistive tech', () => {
+    analyze('test tweet for aria wiring');
+    for (const btn of document.querySelectorAll('.tab-btn')) {
+      const panel = document.getElementById(
+        /** @type {string} */ (btn.getAttribute('aria-controls'))
+      );
+      expect(panel?.getAttribute('role')).toBe('tabpanel');
+      expect(panel?.getAttribute('aria-labelledby')).toBe(btn.id);
+    }
+  });
+
+  it('has a single tabs landmark and no live region over the whole results', () => {
+    expect(document.querySelectorAll('#results nav').length).toBe(1);
+    expect(document.getElementById('results')?.hasAttribute('aria-live')).toBe(false);
+  });
+
+  it('keeps the active tab when the language is switched', () => {
+    analyze('test tweet for locale switching');
+    /** @type {HTMLElement} */ (document.querySelector('.tab-btn[data-tab="tone"]')).click();
+    /** @type {HTMLButtonElement} */ (document.getElementById('langBtn')).click();
+    const active = document.querySelector('.tab-btn.active');
+    expect(active?.getAttribute('data-tab')).toBe('tone');
+    expect(document.querySelector('.tab-panel[data-tab="tone"]')?.hasAttribute('hidden')).toBe(
+      false
+    );
+  });
+
+  it('compare mode explains the next step and focuses the second composer', () => {
+    analyze('first tweet for compare hint');
+    /** @type {HTMLButtonElement} */ (document.getElementById('compareBtn')).click();
+    expect(lastToast()?.textContent).toContain('اكتب التغريدة الثانية');
+    expect(document.activeElement?.id).toBe('tweetCompare');
+  });
+
+  it('renders the A/B comparison when both composers have text', () => {
+    analyze('first tweet for the comparison table');
+    /** @type {HTMLButtonElement} */ (document.getElementById('compareBtn')).click();
+    const second = /** @type {HTMLTextAreaElement} */ (document.getElementById('tweetCompare'));
+    second.value = 'second tweet — what do you think? 🚀';
+    /** @type {HTMLButtonElement} */ (document.getElementById('analyzeBtn')).click();
+
+    const view = /** @type {HTMLElement} */ (document.getElementById('comparisonView'));
+    expect(view.hidden).toBe(false);
+    expect(view.querySelectorAll('.cmp-table tbody tr').length).toBe(4);
+    expect(view.querySelector('.cmp-verdict')?.textContent).toBeTruthy();
+  });
+
+  it('reports an export failure instead of a false success', () => {
+    analyze('tweet whose export will fail');
+    const original = URL.createObjectURL;
+    URL.createObjectURL = () => {
+      throw new Error('boom');
+    };
+    try {
+      /** @type {HTMLButtonElement} */ (document.getElementById('exportTxtBtn')).click();
+    } finally {
+      URL.createObjectURL = original;
+    }
+    expect(lastToast()?.classList.contains('toast-error')).toBe(true);
+    expect(lastToast()?.textContent).toContain('تعذّر');
+  });
+
+  it('reports a share-card failure as an export failure, not "no analysis"', async () => {
+    analyze('tweet for the share card');
+    // jsdom has no canvas implementation, so getContext() returns null
+    /** @type {HTMLButtonElement} */ (document.getElementById('shareCardBtn')).click();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(lastToast()?.textContent).toContain('تعذّر');
+  });
+
   it('language toggle flips dir attribute', () => {
     expect(document.documentElement.getAttribute('dir')).toBe('rtl');
     /** @type {HTMLButtonElement} */ (document.getElementById('langBtn')).click();

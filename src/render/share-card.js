@@ -1,6 +1,7 @@
 // @ts-check
 
 import { t, getLocale } from '../i18n/index.js';
+import { downloadBlob } from '../export/download.js';
 
 /**
  * @typedef {import('../analysis/index.js').AnalysisResult} AnalysisResult
@@ -33,7 +34,10 @@ function wrapText(ctx, text, maxWidth) {
 
 /**
  * Generate a PNG share card for the analysis and trigger download.
+ * Resolves once the PNG has actually been handed to the browser, and rejects if
+ * the canvas is unavailable or encoding fails — so callers report the real outcome.
  * @param {AnalysisResult} data
+ * @returns {Promise<void>}
  */
 export function generateShareCard(data) {
   const width = 1200;
@@ -41,8 +45,12 @@ export function generateShareCard(data) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return Promise.reject(new Error('Canvas 2D context unavailable'));
   const isRtl = getLocale() === 'ar';
+  // Without this the bidi algorithm lays out mixed Arabic/Latin/number runs as LTR,
+  // so hashtags and numbers land on the wrong side of an Arabic sentence.
+  ctx.direction = isRtl ? 'rtl' : 'ltr';
 
   // Background gradient
   const grad = ctx.createLinearGradient(0, 0, width, height);
@@ -68,7 +76,7 @@ export function generateShareCard(data) {
   const tweetMaxWidth = width - 120;
   const lines = wrapText(ctx, data.text, tweetMaxWidth);
   const displayLines = lines.slice(0, 5);
-  if (lines.length > 5) displayLines[4] = displayLines[4].slice(0, -3) + '…';
+  if (lines.length > 5) displayLines[4] = fitWithEllipsis(ctx, displayLines[4], tweetMaxWidth);
   let lineY = 160;
   for (const line of displayLines) {
     ctx.fillText(line, titleX, lineY);
@@ -87,18 +95,30 @@ export function generateShareCard(data) {
   ctx.textAlign = 'center';
   ctx.fillText(t('card.brand'), width / 2, height - 30);
 
-  // Download
-  canvas.toBlob((blob) => {
-    if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${t('report.filename')}_card_${Date.now()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 'image/png');
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('PNG encoding failed'));
+        return;
+      }
+      downloadBlob(`${t('report.filename')}_card_${Date.now()}.png`, blob);
+      resolve();
+    }, 'image/png');
+  });
+}
+
+/**
+ * Trim a line (measured, not by character count) so it plus an ellipsis fits.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} line
+ * @param {number} maxWidth
+ */
+function fitWithEllipsis(ctx, line, maxWidth) {
+  let out = line;
+  while (out.length > 0 && ctx.measureText(out + '…').width > maxWidth) {
+    out = out.slice(0, -1);
+  }
+  return out.trimEnd() + '…';
 }
 
 function drawScoreCard(ctx, x, y, label, value, color) {

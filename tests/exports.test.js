@@ -19,6 +19,18 @@ describe('escapeCsvField', () => {
     expect(escapeCsvField(42)).toBe('42');
   });
 
+  it('neutralizes spreadsheet formulas (CSV injection)', () => {
+    expect(escapeCsvField('=HYPERLINK("http://x","y")')).toBe('"\'=HYPERLINK(""http://x"",""y"")"');
+    expect(escapeCsvField('+1')).toBe("'+1");
+    expect(escapeCsvField('-2+3')).toBe("'-2+3");
+    expect(escapeCsvField('@SUM(A1)')).toBe("'@SUM(A1)");
+    expect(escapeCsvField('\tcmd')).toBe("'\tcmd");
+  });
+
+  it('leaves numbers numeric, including negatives', () => {
+    expect(escapeCsvField(-3)).toBe('-3');
+  });
+
   it('quotes values with newlines and commas', () => {
     expect(escapeCsvField('a,b')).toMatch(/^".*"$/);
     expect(escapeCsvField('line\nbreak')).toMatch(/^".*"$/s);
@@ -48,7 +60,8 @@ describe('buildCsv (single-tweet)', () => {
   it('includes hashtags and mentions', () => {
     const csv = buildCsv(fixture);
     expect(csv).toContain('hashtag,#js');
-    expect(csv).toContain('mention,@alice');
+    // '@' opens a formula in Excel, so the cell is text-prefixed (see escapeCsvField)
+    expect(csv).toContain("mention,'@alice");
   });
 });
 

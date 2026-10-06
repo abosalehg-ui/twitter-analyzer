@@ -397,14 +397,25 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
+  /* Logical: grows from the side the text starts on (right under RTL). */
+  inset-inline-start: 0;
   width: var(--progress, 0%);
-  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  background: linear-gradient(to right, var(--accent), var(--accent-hover));
   transition: width 0.2s;
 }
 
 .sweetspot-bar.in-sweetspot .sweetspot-fill {
-  background: linear-gradient(90deg, var(--success), #4ec76b);
+  background: linear-gradient(to right, var(--success), #4ec76b);
+}
+
+/* Gradients have no logical direction keyword; mirror them so the bright end
+   stays at the leading edge of the fill. */
+[dir='rtl'] .sweetspot-fill {
+  background: linear-gradient(to left, var(--accent), var(--accent-hover));
+}
+
+[dir='rtl'] .sweetspot-bar.in-sweetspot .sweetspot-fill {
+  background: linear-gradient(to left, var(--success), #4ec76b);
 }
 
 .sweetspot-bar.over-limit .sweetspot-fill {
@@ -578,6 +589,13 @@ body {
   width: 100%;
   max-width: 180px;
   height: auto;
+  /* The score number uses fill="currentColor", so it follows the theme. */
+  color: var(--text-primary);
+}
+
+.gauge-track,
+.char-track {
+  stroke: var(--border-strong);
 }
 
 .gauge-label {
@@ -1228,6 +1246,15 @@ body {
 /* ================================================================ */
 
 @media (max-width: 720px) {
+  /* Touch targets: everything tappable is at least 44×44 on phones. */
+  .btn-xs,
+  .btn-sm,
+  .btn-icon,
+  .btn-icon-text {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
   .app-header {
     flex-direction: row;
     align-items: flex-start;

@@ -1,7 +1,12 @@
 // @ts-check
 
-const HASHTAG_RE = /#[ء-يa-zA-Z0-9_]+/g;
-const MENTION_RE = /@[ء-يa-zA-Z0-9_]+/g;
+// Single source of truth for entity patterns. Every module that counts, strips or
+// matches these imports them from here, so all panels agree on the same text.
+// \p{L}\p{N} covers Arabic letters beyond ء-ي and Arabic-Indic digits (#رؤية٢٠٣٠).
+// All are /g: use them with match()/replace() only — test() would be stateful.
+export const HASHTAG_RE = /#[\p{L}\p{N}_]+/gu;
+export const MENTION_RE = /@[\p{L}\p{N}_]+/gu;
+export const LINK_RE = /https?:\/\/\S+/g;
 const EMOJI_RE = /\p{Extended_Pictographic}/gu;
 
 /**
@@ -20,6 +25,15 @@ export function extractHashtags(text) {
  */
 export function extractMentions(text) {
   return text.match(MENTION_RE) ?? [];
+}
+
+/**
+ * Extract all links.
+ * @param {string} text
+ * @returns {string[]}
+ */
+export function extractLinks(text) {
+  return text.match(LINK_RE) ?? [];
 }
 
 /**

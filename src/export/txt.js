@@ -1,6 +1,7 @@
 // @ts-check
 
 import { t, getLocale } from '../i18n/index.js';
+import { downloadBlob } from './download.js';
 
 /**
  * @typedef {import('../analysis/index.js').AnalysisResult} AnalysisResult
@@ -59,17 +60,10 @@ ${new Date(data.analyzedAt).toLocaleString(locale)}
  * Trigger a download of a text file with the given content.
  * @param {string} filename
  * @param {string} content
+ * @param {string} [type='text/plain'] MIME type (charset is always UTF-8)
  */
-export function downloadText(filename, content) {
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+export function downloadText(filename, content, type = 'text/plain') {
+  downloadBlob(filename, new Blob([content], { type: `${type};charset=utf-8` }));
 }
 
 /**

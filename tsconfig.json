@@ -1,0 +1,16 @@
+{
+  // Type-checks the plain-JS sources through their JSDoc annotations. Nothing is
+  // emitted — Vite still builds the app. Run with `npm run typecheck`.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.js"]
+}

@@ -1,6 +1,6 @@
 // @ts-check
 
-import { normalizeArabic } from './tokenize.js';
+import { normForMatch, normList } from './normalize.js';
 import { TONE_PATTERNS, TONE_KEYS } from '../data/tone-patterns.js';
 
 /**
@@ -8,6 +8,13 @@ import { TONE_PATTERNS, TONE_KEYS } from '../data/tone-patterns.js';
  * @property {keyof typeof TONE_PATTERNS | 'neutral'} primary
  * @property {Array<{ tone: string, hits: number }>} scores
  */
+
+// Normalized (and deduplicated, so 'رائعة'/'رائعه' count once) at load time
+// instead of on every analysis.
+const TONE_KEYS_NORM = TONE_KEYS.map((tone) => ({
+  tone,
+  patterns: normList([...TONE_PATTERNS[tone].ar, ...TONE_PATTERNS[tone].en]),
+}));
 
 /**
  * Detect the dominant tone of a tweet. Returns the tone with the most matches,
@@ -17,15 +24,14 @@ import { TONE_PATTERNS, TONE_KEYS } from '../data/tone-patterns.js';
  * @returns {ToneResult}
  */
 export function detectTone(text) {
-  const norm = normalizeArabic(text).toLowerCase();
+  const norm = normForMatch(text);
 
   /** @type {Array<{ tone: string, hits: number }>} */
   const scores = [];
-  for (const tone of TONE_KEYS) {
-    const patterns = TONE_PATTERNS[tone];
+  for (const { tone, patterns } of TONE_KEYS_NORM) {
     let hits = 0;
-    for (const word of [...patterns.ar, ...patterns.en]) {
-      if (norm.includes(normalizeArabic(word).toLowerCase())) hits++;
+    for (const key of patterns) {
+      if (norm.includes(key)) hits++;
     }
     scores.push({ tone, hits });
   }

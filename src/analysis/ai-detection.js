@@ -1,7 +1,7 @@
 // @ts-check
 
-import { normalizeArabic } from './tokenize.js';
-import { extractEmojis } from './extractors.js';
+import { normForMatch } from './normalize.js';
+import { extractEmojis, extractHashtags, HASHTAG_RE, MENTION_RE, LINK_RE } from './extractors.js';
 import { AI_CLICHE_PHRASES, HUMAN_SIGNALS, AI_PUNCTUATION } from '../data/ai-cliches.js';
 
 /**
@@ -31,13 +31,22 @@ const SIGNAL_WEIGHTS = {
   sentence_starters: 0.06,
 };
 
-/**
- * Lowercase + normalize Arabic for matching.
- * @param {string} text
- */
-function normForMatch(text) {
-  return normalizeArabic(text).toLowerCase();
-}
+// Dictionaries are normalized once at load time, not on every analysis.
+// Deduplicated by normalized key so spelling variants of one phrase count once.
+const CLICHES = [
+  ...new Map(
+    [...AI_CLICHE_PHRASES.ar, ...AI_CLICHE_PHRASES.en].map((phrase) => [
+      normForMatch(phrase),
+      phrase,
+    ])
+  ),
+].map(([key, phrase]) => ({ key, phrase }));
+
+const HUMAN_SIGNAL_MATCHERS = [...HUMAN_SIGNALS.ar, ...HUMAN_SIGNALS.en].map((word) => ({
+  word,
+  // word-boundary-ish match
+  re: new RegExp(`(^|\\s)${escapeRegex(normForMatch(word))}(\\s|$|[.!?؟،])`),
+}));
 
 /**
  * Split text into sentences (rough — splits on . ! ? ؟ ! ، newlines).
@@ -79,7 +88,7 @@ export function burstinessSignal(text) {
  */
 export function lexicalDiversitySignal(text) {
   const tokens = normForMatch(text)
-    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(LINK_RE, ' ')
     .match(/[\p{L}]+/gu);
   if (!tokens || tokens.length < 5) return 0.5;
   const ttr = new Set(tokens).size / tokens.length;
@@ -99,9 +108,9 @@ export function lexicalDiversitySignal(text) {
  */
 export function formalitySignal(text) {
   const tokens = normForMatch(text)
-    .replace(/https?:\/\/\S+/g, ' ')
-    .replace(/#[\p{L}\d_]+/gu, ' ')
-    .replace(/@[\p{L}\d_]+/gu, ' ')
+    .replace(LINK_RE, ' ')
+    .replace(HASHTAG_RE, ' ')
+    .replace(MENTION_RE, ' ')
     .match(/[\p{L}]+/gu);
   if (!tokens || tokens.length < 3) return 0.5;
   const longWords = tokens.filter((t) => t.length >= 7).length;
@@ -132,8 +141,8 @@ export function clicheSignal(text) {
   const norm = normForMatch(text);
   /** @type {string[]} */
   const matches = [];
-  for (const phrase of [...AI_CLICHE_PHRASES.ar, ...AI_CLICHE_PHRASES.en]) {
-    if (norm.includes(normForMatch(phrase))) matches.push(phrase);
+  for (const { phrase, key } of CLICHES) {
+    if (norm.includes(key)) matches.push(phrase);
   }
   // 1 match = 0.55; 2 = 0.8; 3+ = 1.0
   const score =
@@ -167,9 +176,7 @@ export function typoSignal(text) {
   const norm = normForMatch(text);
   /** @type {string[]} */
   const matches = [];
-  for (const word of [...HUMAN_SIGNALS.ar, ...HUMAN_SIGNALS.en]) {
-    // word-boundary-ish match
-    const re = new RegExp(`(^|\\s)${escapeRegex(normForMatch(word))}(\\s|$|[.!?؟،])`);
+  for (const { word, re } of HUMAN_SIGNAL_MATCHERS) {
     if (re.test(norm)) matches.push(word);
   }
   // matches present → very human → low AI score
@@ -183,12 +190,12 @@ export function typoSignal(text) {
  * @param {string} text
  */
 export function hashtagPatternSignal(text) {
-  const hashtags = text.match(/#[\p{L}\d_]+/gu) || [];
+  const hashtags = extractHashtags(text);
   if (hashtags.length === 0) return 0.4;
   if (hashtags.length >= 4) return 0.85;
   // Detect "all hashtags clustered at end" — split last N chars
   const lastQuarter = text.slice(Math.floor(text.length * 0.7));
-  const clusteredCount = (lastQuarter.match(/#[\p{L}\d_]+/gu) || []).length;
+  const clusteredCount = extractHashtags(lastQuarter).length;
   if (clusteredCount === hashtags.length && hashtags.length >= 3) return 0.75;
   return 0.4;
 }

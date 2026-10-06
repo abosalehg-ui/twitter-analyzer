@@ -35,6 +35,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Makes the JSDoc types in every `// @ts-check` file binding. Without it a
+      # renamed field (readability.longRatio → longWordRatio) shipped as NaN%.
+      - name: Typecheck
+        run: npm run typecheck
+
       # Keeps the formatting baseline from drifting back. Fix locally with
       # `npm run format`.
       - name: Check formatting

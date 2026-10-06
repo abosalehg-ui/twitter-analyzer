@@ -118,7 +118,10 @@ function toggleLocale() {
   saveLocale(next);
   applyLocale();
   rebuildComposers();
+  // Rebuilding the tabs (to relabel them) would otherwise jump back to Overview.
+  const activeTab = state.tabs?.getActive();
   state.tabs = rebuildTabs();
+  if (activeTab) state.tabs.setActive(activeTab);
   if (state.current) {
     renderAll(state.current);
     if (state.compareWith) {
@@ -169,10 +172,10 @@ function rebuildComposers() {
 function rebuildTabs() {
   const navHost = /** @type {HTMLElement} */ ($('tabsNav'));
   const panelsHost = /** @type {HTMLElement} */ ($('tabsPanels'));
-  const t = buildTabs();
-  navHost.replaceChildren(t.nav);
-  panelsHost.replaceChildren(t.panels);
-  return t;
+  const tabs = buildTabs();
+  navHost.replaceChildren(tabs.nav);
+  panelsHost.replaceChildren(tabs.panels);
+  return tabs;
 }
 
 // ====================================================================
@@ -228,20 +231,20 @@ function runAnalysis() {
 
 function renderAll(data) {
   if (!state.tabs) return;
-  const t = state.tabs;
-  renderOverview(t.panelOf('overview'), data);
-  renderAi(t.panelOf('ai'), data);
-  renderAlgorithm(t.panelOf('algorithm'), data);
-  renderEngagement(t.panelOf('engagement'), data);
+  const tabs = state.tabs;
+  renderOverview(tabs.panelOf('overview'), data);
+  renderAi(tabs.panelOf('ai'), data);
+  renderAlgorithm(tabs.panelOf('algorithm'), data);
+  renderEngagement(tabs.panelOf('engagement'), data);
   renderOptimizer(
-    t.panelOf('optimizer'),
+    tabs.panelOf('optimizer'),
     data,
     suggestRewrites(data.text, data.algorithm.score),
     applyOptimization
   );
-  renderWeakness(t.panelOf('weakness'), data);
-  renderTone(t.panelOf('tone'), data);
-  renderDetails(t.panelOf('details'), data);
+  renderWeakness(tabs.panelOf('weakness'), data);
+  renderTone(tabs.panelOf('tone'), data);
+  renderDetails(tabs.panelOf('details'), data);
 }
 
 function applyOptimization(text) {
@@ -291,8 +294,9 @@ function toggleCompareMode() {
   cmpHost.hidden = false;
   $('compareBtn').textContent = t('btn.cancelCompare');
 
-  // Run analysis flow with current text + compare on next analyze click
-  toast(t('btn.compare'), 'info');
+  // Tell the user what to do next, not just echo the button label.
+  toast(t('status.compareHint'), 'info');
+  state.compareComposer.textarea.focus();
 }
 
 // ====================================================================
@@ -334,16 +338,18 @@ function runSaveHistory() {
   renderHistoryList();
 }
 
-function runShareCard() {
+async function runShareCard() {
   if (!state.current) {
     toast(t('status.noAnalysis'), 'error');
     return;
   }
+  // Success is reported only after the PNG was actually encoded and handed off;
+  // a failure is an export failure, not a missing analysis.
   try {
-    generateShareCard(state.current);
+    await generateShareCard(state.current);
     toast(t('status.cardGenerated'), 'success');
   } catch {
-    toast(t('status.noAnalysis'), 'error');
+    toast(t('status.exportFailed'), 'error');
   }
 }
 
@@ -352,8 +358,12 @@ function withCurrent(fn) {
     toast(t('status.noAnalysis'), 'error');
     return;
   }
-  fn(state.current);
-  toast(t('status.exported'), 'success');
+  try {
+    fn(state.current);
+    toast(t('status.exported'), 'success');
+  } catch {
+    toast(t('status.exportFailed'), 'error');
+  }
 }
 
 // ====================================================================
@@ -408,6 +418,14 @@ function handleInputChange() {
 // ====================================================================
 
 export function init() {
+  // init() builds a fresh UI, so drop anything left from a previous mount;
+  // otherwise a stale compare composer makes the next compare click close it.
+  state.current = null;
+  state.compareWith = null;
+  state.compareComposer = null;
+  state.primaryComposer = null;
+  state.tabs = null;
+
   // Locale + theme preferences
   setLocale(loadLocale());
   applyTheme(loadTheme());
@@ -435,7 +453,8 @@ export function init() {
   renderHistoryList();
 }
 
-if (typeof window !== 'undefined' && !window.__TWITTER_ANALYZER_TEST__) {
+// Tests set this flag before importing so they can call init() themselves.
+if (typeof window !== 'undefined' && !(/** @type {any} */ (window).__TWITTER_ANALYZER_TEST__)) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

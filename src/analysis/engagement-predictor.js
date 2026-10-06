@@ -1,7 +1,8 @@
 // @ts-check
 
-import { normalizeArabic } from './tokenize.js';
-import { extractEmojis, extractHashtags, extractMentions } from './extractors.js';
+import { normForMatch, normList } from './normalize.js';
+import { tokenize } from './tokenize.js';
+import { extractEmojis, extractHashtags, extractMentions, extractLinks } from './extractors.js';
 import { scoreTweet, classify } from './sentiment.js';
 import { BAIT_PATTERNS } from '../data/bait-patterns.js';
 import { SENSITIVE_PATTERNS } from '../data/sensitive-words.js';
@@ -34,7 +35,6 @@ import { SENSITIVE_PATTERNS } from '../data/sensitive-words.js';
 const QUESTION_RE = /[?؟]/;
 const CTA_AR = ['شاركني', 'علق', 'علّق', 'صوّت', 'صوت', 'رايكم', 'رأيكم', 'برايكم', 'برأيكم'];
 const CTA_EN = ['vote', 'share your', 'tell me', 'let me know', 'reply with', 'comment'];
-const LINK_RE = /https?:\/\/\S+/g;
 const MEDIA_HOSTS = [
   'pic.twitter.com',
   'x.com/i/web/status',
@@ -42,25 +42,74 @@ const MEDIA_HOSTS = [
   'video.twimg.com',
 ];
 
+const CTA_KEYS = normList([...CTA_AR, ...CTA_EN]);
+
+// Arabic clitics that attach to the front of a word (و/ف/ب/ل + ال). Stripping them
+// lets 'والغبي' match the entry 'غبي' without falling back to substring matching.
+const ARABIC_PREFIXES = ['وال', 'فال', 'بال', 'كال', 'لل', 'ال', 'و', 'ف', 'ب', 'ل'];
+
 /**
- * Lowercase + normalize Arabic.
- * @param {string} text
+ * @typedef {Object} PatternMatcher
+ * @property {Set<string>} words    letter-only single words, matched against whole tokens
+ * @property {string[]} phrases     everything else ('follow back', 'f4f', '🚨 breaking'),
+ *                                  matched as substrings since tokenize() drops non-letters
  */
-function norm(text) {
-  return normalizeArabic(text).toLowerCase();
+
+/**
+ * Pre-normalize a { ar, en } dictionary once at load time.
+ *
+ * Single words are matched against whole tokens, never as substrings: a substring
+ * check made 'حيوانات أليفة' count as toxic ('حيوان'), 'الرئيسية' as political
+ * ('رئيس') and 'software' as political ('war'). Because toxicity feeds the
+ * report action (weight -369), one such false hit used to zero the whole score.
+ *
+ * @param {Record<string, string[]>} dict
+ * @returns {PatternMatcher}
+ */
+function buildMatcher(dict) {
+  const all = normList(Object.values(dict).flat());
+  const isWord = (/** @type {string} */ w) => /^\p{L}+$/u.test(w);
+  return {
+    words: new Set(all.filter(isWord)),
+    phrases: all.filter((w) => !isWord(w)),
+  };
+}
+
+const BAIT = buildMatcher(BAIT_PATTERNS);
+const TOXICITY = buildMatcher(SENSITIVE_PATTERNS.toxicity);
+const SPAM = buildMatcher(SENSITIVE_PATTERNS.spammy);
+const POLITICAL = buildMatcher(SENSITIVE_PATTERNS.political);
+
+/**
+ * True when a token is a dictionary word, directly or after removing one clitic prefix.
+ * @param {string} token
+ * @param {Set<string>} words
+ */
+function tokenHits(token, words) {
+  if (words.has(token)) return true;
+  for (const p of ARABIC_PREFIXES) {
+    if (token.length - p.length >= 2 && token.startsWith(p) && words.has(token.slice(p.length))) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
- * Count pattern matches against a normalized text.
- * @param {string} normText
- * @param {Record<string, string[]>} dict
+ * Count distinct dictionary entries present in the text.
+ * @param {string} normText   normForMatch(text)
+ * @param {string[]} tokens   tokenize(text)
+ * @param {PatternMatcher} matcher
  */
-function countMatches(normText, dict) {
-  let count = 0;
-  for (const list of Object.values(dict)) {
-    for (const word of list) {
-      if (normText.includes(norm(word))) count++;
-    }
+export function countMatches(normText, tokens, matcher) {
+  /** @type {Set<string>} */
+  const hit = new Set();
+  for (const tok of tokens) {
+    if (tokenHits(tok, matcher.words)) hit.add(tok);
+  }
+  let count = hit.size;
+  for (const phrase of matcher.phrases) {
+    if (normText.includes(phrase)) count++;
   }
   return count;
 }
@@ -71,24 +120,25 @@ function countMatches(normText, dict) {
  * @returns {TweetFeatures}
  */
 export function extractFeatures(text) {
-  const normText = norm(text);
+  const normText = normForMatch(text);
+  const tokens = tokenize(text);
   const wordCount = (text.match(/\S+/g) || []).length;
   const hashtags = extractHashtags(text);
   const mentions = extractMentions(text);
   const emojis = extractEmojis(text);
-  const links = text.match(LINK_RE) || [];
+  const links = extractLinks(text);
   const hasMediaUrl = links.some((l) => MEDIA_HOSTS.some((h) => l.includes(h)));
 
   const hasQuestion = QUESTION_RE.test(text);
-  const hasCta = [...CTA_AR, ...CTA_EN].some((p) => normText.includes(norm(p)));
+  const hasCta = CTA_KEYS.some((p) => normText.includes(p));
 
   const sentimentScore = scoreTweet(text);
   const sentiment = classify(sentimentScore);
 
-  const baitHits = countMatches(normText, BAIT_PATTERNS);
-  const toxicityHits = countMatches(normText, SENSITIVE_PATTERNS.toxicity);
-  const spamHits = countMatches(normText, SENSITIVE_PATTERNS.spammy);
-  const politicalHits = countMatches(normText, SENSITIVE_PATTERNS.political);
+  const baitHits = countMatches(normText, tokens, BAIT);
+  const toxicityHits = countMatches(normText, tokens, TOXICITY);
+  const spamHits = countMatches(normText, tokens, SPAM);
+  const politicalHits = countMatches(normText, tokens, POLITICAL);
 
   const allCapsWords = (text.match(/\b[A-Z]{3,}\b/g) || []).length;
 

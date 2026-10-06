@@ -17,7 +17,7 @@ const TAB_KEYS = [
 /**
  * Build tab navigation. Returns { nav, panels, setActive(key) }.
  * Each panel is a <section data-tab="key"> that callers fill with content.
- * @returns {{ nav: HTMLElement, panels: HTMLElement, setActive: (key: string) => void, panelOf: (key: string) => HTMLElement }}
+ * @returns {{ nav: HTMLElement, panels: HTMLElement, setActive: (key: string) => void, getActive: () => string, panelOf: (key: string) => HTMLElement }}
  */
 export function buildTabs() {
   /** @type {Record<string, HTMLButtonElement>} */
@@ -37,6 +37,8 @@ export function buildTabs() {
           role: 'tab',
           class: 'tab-btn',
           'aria-selected': 'false',
+          'aria-controls': 'panel-' + key,
+          id: 'tab-' + key,
           'data-tab': key,
           tabindex: '-1',
         },
@@ -49,6 +51,8 @@ export function buildTabs() {
     const panel = el('section', {
       class: 'tab-panel',
       role: 'tabpanel',
+      id: 'panel-' + key,
+      'aria-labelledby': 'tab-' + key,
       hidden: 'hidden',
       'data-tab': key,
     });
@@ -56,7 +60,11 @@ export function buildTabs() {
     panelsEl.appendChild(panel);
   }
 
+  let activeKey = TAB_KEYS[0];
+
   function setActive(key) {
+    if (!TAB_KEYS.includes(key)) return;
+    activeKey = key;
     for (const k of TAB_KEYS) {
       const isActive = k === key;
       buttons[k].classList.toggle('active', isActive);
@@ -98,6 +106,7 @@ export function buildTabs() {
     nav: navEl,
     panels: panelsEl,
     setActive,
+    getActive: () => activeKey,
     panelOf: (key) => panelMap[key],
   };
 }

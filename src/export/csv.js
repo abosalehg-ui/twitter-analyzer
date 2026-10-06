@@ -8,11 +8,20 @@ import { t } from '../i18n/index.js';
  */
 
 /**
- * Escape a single CSV field per RFC 4180.
+ * Escape a single CSV field per RFC 4180, and neutralize spreadsheet formulas.
+ *
+ * Excel / Sheets / LibreOffice execute a cell that starts with = + - @ (or a tab /
+ * CR) as a formula, so a tweet like `=HYPERLINK(...)` would run when the exported
+ * file is opened. Prefixing a single quote makes it a literal string (OWASP
+ * "CSV Injection"). Numbers are left alone so negative scores stay numeric.
+ *
  * @param {string | number} value
  */
 export function escapeCsvField(value) {
-  const str = String(value);
+  let str = String(value);
+  if (typeof value === 'string' && /^[=+\-@\t\r]/.test(str)) {
+    str = "'" + str;
+  }
   if (/[",\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }
@@ -75,5 +84,5 @@ export function buildCsv(data) {
 export function exportCsv(data) {
   const filename = `${t('report.filename')}_${Date.now()}.csv`;
   const content = '﻿' + buildCsv(data);
-  downloadText(filename, content);
+  downloadText(filename, content, 'text/csv');
 }

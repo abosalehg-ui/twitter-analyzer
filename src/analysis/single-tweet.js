@@ -5,7 +5,6 @@ import { scoreAlgorithm } from './algorithm-score.js';
 import { readability } from './readability.js';
 import { detectTone } from './tone-detector.js';
 import { extractHashtags, extractMentions, extractEmojis } from './extractors.js';
-import { scoreTweet, classify } from './sentiment.js';
 import { meaningfulTokens } from './tokenize.js';
 
 /**
@@ -32,8 +31,10 @@ import { meaningfulTokens } from './tokenize.js';
  */
 export function analyzeTweet(text) {
   const trimmed = text.trim();
-  const sentimentScore = scoreTweet(trimmed);
-  const sentimentLabel = classify(sentimentScore);
+  // The algorithm scorer already computes sentiment as one of its features;
+  // reuse it rather than tokenizing and scoring the same text twice.
+  const algorithm = scoreAlgorithm(trimmed);
+  const { sentimentScore, sentiment: sentimentLabel } = algorithm.features;
 
   const tokens = meaningfulTokens(trimmed);
   /** @type {Record<string, number>} */
@@ -54,7 +55,7 @@ export function analyzeTweet(text) {
     keywords,
     sentiment: { score: sentimentScore, label: sentimentLabel },
     ai: detectAi(trimmed),
-    algorithm: scoreAlgorithm(trimmed),
+    algorithm,
     readability: readability(trimmed),
     tone: detectTone(trimmed),
     analyzedAt: new Date().toISOString(),

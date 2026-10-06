@@ -2,11 +2,11 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.0.1-cd7f32)
+![Version](https://img.shields.io/badge/version-3.0.2-cd7f32)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Language](https://img.shields.io/badge/language-Arabic%20%2F%20English-green)
 ![Platform](https://img.shields.io/badge/platform-Web-orange)
-![Tests](https://img.shields.io/badge/tests-127%20passing-2da44e)
+[![CI](https://github.com/abosalehg-ui/twitter-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/abosalehg-ui/twitter-analyzer/actions/workflows/ci.yml)
 
 **تحليل عميق لتغريدة واحدة: كشف الذكاء الاصطناعي، توافقية خوارزمية X، وتوصيات للتحسين**
 
@@ -27,7 +27,7 @@ _Single-tweet deep diagnostics: AI detection, X-algorithm fit, and improvement s
 ### ما الجديد في v3.0؟
 
 - 🤖 **كشف الذكاء الاصطناعي**: 9 إشارات استدلالية موزونة تُقدّر احتمالية كون النص مكتوباً بـ LLM
-- 🐦 **توافقية خوارزمية X**: محرك تنبؤ مُصمَّم وفق [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) يحسب درجة التوافق عبر 15 احتمال تفاعل
+- 🐦 **توافقية خوارزمية X**: محرك تنبؤ استدلالي مستوحى من بنية [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) يقدّر درجة التوافق عبر 15 احتمال تفاعل
 - 🪄 **مُحسِّن ذكي**: 3 إعادات صياغة (أقصر / سؤال / إيجابي) مع درجة جديدة متوقعة لكل واحدة
 - ⚔️ **مقارنة A/B** بين تغريدتين
 - 🗂️ **سجل التحليلات** (آخر 20)
@@ -57,7 +57,9 @@ _Single-tweet deep diagnostics: AI detection, X-algorithm fit, and improvement s
 
 ### 🐦 توافقية خوارزمية X
 
-مبنية على نموذج الـ Grok-based transformer الجديد من xAI. الخوارزمية تتنبأ بـ **15 احتمالاً للتفاعل** وتجمعها وفق المعادلة:
+> ⚠️ **ما هي وما ليست**: هذه الدرجة **تقدير استدلالي** مستوحى من بنية الأوزان التي تعلنها [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) — **وليست** نموذج X الفعلي ولا مخرجاته. الأوزان الحقيقية غير منشورة، فالأوزان هنا (`src/data/algorithm-weights.js`) والاحتمالات (`predictProbabilities()`) قيم يدوية مُعايَرة تحترم المبدأ المعلن فقط: الإجراءات الإيجابية بأوزان موجبة، والسلبية بأوزان سالبة أكبر حجماً.
+
+يقدّر المحرك **15 احتمالاً للتفاعل** ويجمعها وفق المعادلة:
 
 ```
 Final Score = Σ (weight_i × P(action_i))
@@ -141,7 +143,7 @@ Final Score = Σ (weight_i × P(action_i))
 - ✅ **Client-side بالكامل**: لا خادم، لا API، لا تتبّع، لا كوكيز
 - ✅ **localStorage محلي فقط**: المسودة + السجل + التفضيلات كلها على جهازك
 - ✅ **XSS-hardened**: كل بيانات المستخدم تُعرض عبر `textContent` — لا `innerHTML`
-- ✅ **127 اختبار** بما فيها حارس XSS صريح
+- ✅ **162 اختبار** بما فيها حارس XSS صريح وحارس لصحة القواميس العربية
 - ✅ **مفتوح المصدر** بالكامل تحت رخصة MIT
 
 ---
@@ -182,11 +184,12 @@ src/
 │   ├── readability.js           ← مؤشر LIX المعدّل
 │   ├── tone-detector.js         ← 6 نبرات
 │   ├── single-tweet.js          ← orchestrator
+│   ├── normalize.js             ← تطبيع عربي موحّد (للنص والقواميس)
 │   ├── sentiment.js / extractors.js / tokenize.js
 │   └── index.js
 ├── data/
 │   ├── ai-cliches.js            ← قاموس عبارات LLM
-│   ├── algorithm-weights.js     ← أوزان xai-org
+│   ├── algorithm-weights.js     ← أوزان استدلالية (مستوحاة من xai-org)
 │   ├── bait-patterns.js         ← engagement-bait
 │   ├── sensitive-words.js       ← toxicity/spam
 │   ├── tone-patterns.js
@@ -201,7 +204,7 @@ src/
 ├── i18n/
 │   ├── ar.js, en.js, index.js
 ├── export/
-│   ├── txt.js, csv.js, json.js
+│   ├── txt.js, csv.js, json.js, download.js
 └── main.js                       ← entry point
 ```
 
@@ -212,10 +215,11 @@ src/
 | `npm run dev` | Vite dev server (HMR) |
 | `npm run build` | بناء إنتاجي إلى `dist/` |
 | `npm run preview` | معاينة `dist/` |
-| `npm test` | 127 اختبار (vitest + jsdom) |
+| `npm test` | 162 اختبار (vitest + jsdom) |
 | `npm run test:watch` | watch mode |
 | `npm run test:coverage` | تقرير تغطية |
 | `npm run lint` | ESLint |
+| `npm run typecheck` | فحص الأنواع عبر JSDoc (`tsc`، بلا إخراج) |
 | `npm run format` | Prettier |
 
 ### النشر
@@ -225,7 +229,7 @@ src/
 2. يبني عبر Vite
 3. ينشر `dist/` إلى GitHub Pages تلقائياً
 
-### الاختبارات (127 ✅)
+### الاختبارات (162 ✅)
 
 | ملف | محتوى |
 |---|---|
@@ -235,7 +239,9 @@ src/
 | `optimizer.test.js` | إعادات الصياغة |
 | `history.test.js` | dedup + cap 20 + persistence |
 | `integration.test.js` | 11 سيناريو نهاية-إلى-نهاية في الـ DOM |
-| `exports.test.js` | TXT/CSV/JSON v3 |
+| `exports.test.js` | TXT/CSV/JSON v3 + حماية CSV من حقن الصيغ |
+| `arabic-data.test.js` | تطبيع القواميس، مطابقة الكلمات الحساسة بالتوكن، المحسّن العربي |
+| `share-card.test.js` | بطاقة PNG: الاتجاه، القص بالقياس، حالات الفشل |
 | + `dom`, `tabs`, `extractors`, `sentiment`, `storage`, `tokenize` |
 
 ---
@@ -252,7 +258,7 @@ src/
 ### Dev tooling (لا يُشحَن للمتصفح)
 
 - **Vite 8** — dev server + production build
-- **Vitest 4 + jsdom 29** — 127 اختبار
+- **Vitest 4 + jsdom 29** — 162 اختبار
 - **ESLint 10** + **Prettier 3**
 
 ### الحجم
@@ -277,7 +283,21 @@ dist/assets/index-xxx.js        68.02 kB │ gzip: 22.79 kB
 
 ## 🔄 سجل التحديثات
 
-### v3.0.1 (2026-07) — الإصدار الحالي
+### v3.0.2 (2026-10) — الإصدار الحالي
+إصلاح دقة التحليل العربي وتطبيق خطة مراجعة «مِحَك».
+- 🐛 مطابقة الكلمات الحساسة بالتوكن بدل الجزء من الكلمة: «حيوانات أليفة» كانت تُصفّر درجة الخوارزمية
+- 🐛 تطبيع القواميس عند التحميل: صيغ «ة/أ/ى» في قاموس المشاعر والكلمات الشائعة كانت لا تُطابَق أبداً
+- 🐛 «نسبة الكلمات الطويلة» كانت تظهر `NaN%`
+- 🐛 استبدالات المحسّن العربية كانت معطّلة (`\b` لا يعمل مع العربية)، واقتراح «أقصر» لم يعد يقص التغريدة
+- 🎨 رقم العدادات يتبع الثيم (كان أبيض على أبيض في الثيم الفاتح)، وألوان SVG من متغيرات CSS
+- ♿ ربط التبويبات بلوحاتها (`aria-controls`/`aria-labelledby`)، وإزالة `nav` المتداخل و`aria-live` على النتائج
+- 🌍 شريط الطول يمتلئ من جهة بداية النص في RTL، و`ctx.direction` لبطاقة المشاركة
+- 💬 رسائل فشل صادقة للتصدير والبطاقة، وتلميح للمقارنة، والحفاظ على التبويب عند تبديل اللغة
+- 📱 أهداف لمس 44px على الجوال
+- 🔐 حماية تصدير CSV من حقن الصيغ، وترقية Vitest (صفر ثغرات في `npm audit`)
+- 🧪 فحص الأنواع `tsc` في CI، و35 اختباراً جديداً (التغطية ~90%)
+
+### v3.0.1 (2026-07)
 إصدار صيانة: إصلاحات جودة وأمان بعد مراجعة شاملة للشيفرة.
 - 🔐 ترقية أدوات التطوير (Vite 8، Vitest 4، ESLint 10، jsdom 29) → **صفر ثغرات** في `npm audit`
 - 🔐 إضافة `Content-Security-Policy` و`referrer` meta كتحصين دفاعي
@@ -363,7 +383,7 @@ dist/assets/index-xxx.js        68.02 kB │ gzip: 22.79 kB
 ### What's new in v3.0?
 
 - 🤖 **AI detection**: 9 weighted heuristic signals to estimate the likelihood that the text was written by an LLM
-- 🐦 **X algorithm fit**: a prediction engine modeled after [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) that scores compatibility across 15 engagement actions
+- 🐦 **X algorithm fit**: a heuristic prediction engine inspired by the structure of [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) that estimates compatibility across 15 engagement actions
 - 🪄 **Smart optimizer**: 3 rewrite variants (shorter / question / positive) with a predicted new score for each
 - ⚔️ **A/B comparison** between two tweets
 - 🗂️ **Analysis history** (last 20)
@@ -393,7 +413,9 @@ A 0-100 score with a confidence band (low/medium/high based on text length). Bui
 
 ### 🐦 X Algorithm Fit
 
-Modeled after the new Grok-based transformer from xAI. The algorithm predicts probabilities across **15 engagement actions** and combines them as:
+> ⚠️ **What this is and isn't**: the score is a **heuristic estimate** inspired by the weighting structure published in [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) — it is **not** X's actual model or its output. The real weights are not public; the weights here (`src/data/algorithm-weights.js`) and the probabilities (`predictProbabilities()`) are hand-calibrated values that only respect the documented principle: positive actions carry positive weights, negative actions larger negative ones.
+
+The engine estimates **15 engagement-action probabilities** and combines them as:
 
 ```
 Final Score = Σ (weight_i × P(action_i))
@@ -477,7 +499,7 @@ After analyzing a tweet, click "⚔️ Compare with another tweet" → opens a s
 - ✅ **Fully client-side**: no server, no API, no tracking, no cookies
 - ✅ **localStorage stays local**: draft, history, and preferences live on your device only
 - ✅ **XSS-hardened**: all user input rendered via `textContent` — no `innerHTML`
-- ✅ **127 tests** including an explicit XSS guard
+- ✅ **162 tests** including an explicit XSS guard and an Arabic-dictionary correctness guard
 - ✅ **Fully open source** under MIT license
 
 ---
@@ -516,10 +538,11 @@ See the [Arabic section](#arabic) above for the full file tree, npm scripts, dep
 | `npm run dev` | Vite dev server with HMR |
 | `npm run build` | production build to `dist/` |
 | `npm run preview` | preview `dist/` |
-| `npm test` | 127 tests (vitest + jsdom) |
+| `npm test` | 162 tests (vitest + jsdom) |
 | `npm run test:watch` | watch mode |
 | `npm run test:coverage` | coverage report |
 | `npm run lint` | ESLint |
+| `npm run typecheck` | JSDoc type check (`tsc`, no emit) |
 | `npm run format` | Prettier |
 
 ### Bundle size
@@ -552,7 +575,21 @@ dist/assets/index-xxx.js        68.02 kB │ gzip: 22.79 kB
 
 ## 🔄 Changelog
 
-### v3.0.1 (2026-07) — current
+### v3.0.2 (2026-10) — current
+Arabic-analysis accuracy fixes and the «mihak» review plan.
+- 🐛 Sensitive words are matched per token, not as substrings: "حيوانات أليفة" (pets) used to zero the algorithm score
+- 🐛 Dictionaries are normalized at load time: entries with ة/أ/ى in the sentiment and stop-word lists never matched
+- 🐛 "Long-word ratio" rendered as `NaN%`
+- 🐛 Arabic optimizer replacements were dead (`\b` does not work on Arabic); the "shorter" variant no longer truncates
+- 🎨 Gauge numbers follow the theme (were white-on-white in light mode); SVG colors come from CSS tokens
+- ♿ Tabs linked to panels (`aria-controls`/`aria-labelledby`); removed nested `nav` and the `aria-live` on results
+- 🌍 Length bar fills from the text's start edge under RTL; `ctx.direction` set on the share card
+- 💬 Honest failure toasts for exports and the share card, a compare hint, active tab kept across language switch
+- 📱 44px touch targets on phones
+- 🔐 CSV export neutralizes spreadsheet formulas; Vitest upgraded (zero `npm audit` findings)
+- 🧪 `tsc` type check in CI, 35 new tests (~90% coverage)
+
+### v3.0.1 (2026-07)
 Maintenance release: quality and security fixes following a full code review.
 - 🔐 Upgraded dev tooling (Vite 8, Vitest 4, ESLint 10, jsdom 29) → **zero** `npm audit` vulnerabilities
 - 🔐 Added `Content-Security-Policy` + `referrer` meta as defense in depth
